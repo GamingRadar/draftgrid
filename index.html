@@ -7,7 +7,7 @@
     <meta name="description" content="Generate custom printable A4 drawing guides with precision ratios and margins. Perfect for concept art and product design.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -29,99 +29,185 @@
             </header>
 
             <div class="sidebar-content">
-                <!-- Page Setup -->
-                <section class="control-group">
-                    <h3><i data-lucide="file-text"></i> Page Setup</h3>
-                    <div class="radio-group">
-                        <label class="radio-item">
-                            <input type="radio" name="orientation" value="portrait" checked>
-                            <span>Portrait</span>
-                        </label>
-                        <label class="radio-item">
-                            <input type="radio" name="orientation" value="landscape">
-                            <span>Landscape</span>
-                        </label>
-                    </div>
-                </section>
+                <!-- Group 1: Core Layout -->
+                <details class="sidebar-section" open>
+                    <summary><i data-lucide="layout-grid"></i> Core Layout</summary>
+                    <div class="section-content">
+                        <!-- Orientation -->
+                        <div class="control-group">
+                            <h4>Page Orientation</h4>
+                            <div class="radio-group">
+                                <label class="radio-item">
+                                    <input type="radio" name="orientation" value="portrait" checked>
+                                    <span>Portrait</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="orientation" value="landscape">
+                                    <span>Landscape</span>
+                                </label>
+                            </div>
+                        </div>
 
-                <!-- Layout -->
-                <section class="control-group">
-                    <h3><i data-lucide="layout-grid"></i> Layout</h3>
-                    <div class="input-wrapper">
-                        <label for="box-count">Number of Rectangles (2-12)</label>
-                        <input type="range" id="box-count" min="2" max="12" value="6">
-                        <span id="box-count-display">6</span>
-                    </div>
-                </section>
+                        <!-- Count -->
+                        <div class="control-group">
+                            <h4>Rectangles (2-12)</h4>
+                            <div class="input-wrapper">
+                                <input type="range" id="box-count" min="2" max="12" value="6">
+                                <span id="box-count-display">6</span>
+                            </div>
+                        </div>
 
-                <!-- Aspect Ratio -->
-                <section class="control-group">
-                    <h3><i data-lucide="aspect-ratio"></i> Aspect Ratio</h3>
-                    <div class="radio-group-grid">
-                        <label class="radio-item">
-                            <input type="radio" name="ratio" value="1:1" checked>
-                            <span>1:1</span>
-                        </label>
-                        <label class="radio-item">
-                            <input type="radio" name="ratio" value="2:3">
-                            <span>2:3</span>
-                        </label>
-                        <label class="radio-item">
-                            <input type="radio" name="ratio" value="3:4">
-                            <span>3:4</span>
-                        </label>
-                        <label class="radio-item">
-                            <input type="radio" name="ratio" value="custom">
-                            <span>Custom</span>
-                        </label>
-                    </div>
-                    <div id="custom-ratio-inputs" class="hidden">
-                        <div class="input-row">
-                            <input type="number" id="ratio-w" value="16" placeholder="W">
-                            <span>:</span>
-                            <input type="number" id="ratio-h" value="9" placeholder="H">
+                        <!-- Ratio -->
+                        <div class="control-group">
+                            <h4>Aspect Ratio</h4>
+                            <div class="radio-group-grid">
+                                <label class="radio-item">
+                                    <input type="radio" name="ratio" value="1:1" checked>
+                                    <span>1:1</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="ratio" value="2:3">
+                                    <span>2:3</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="ratio" value="3:4">
+                                    <span>3:4</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="ratio" value="custom">
+                                    <span>Custom</span>
+                                </label>
+                            </div>
+                            <div id="custom-ratio-inputs" class="hidden">
+                                <div class="input-row">
+                                    <input type="number" id="ratio-w" value="16" placeholder="W">
+                                    <span>:</span>
+                                    <input type="number" id="ratio-h" value="9" placeholder="H">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Spacing -->
+                        <div class="control-group no-border">
+                            <h4>Spacing</h4>
+                            <div class="radio-group-grid">
+                                <label class="radio-item">
+                                    <input type="radio" name="spacing" value="small">
+                                    <span>Small</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="spacing" value="medium" checked>
+                                    <span>Med</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="spacing" value="large">
+                                    <span>Large</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
-                </section>
+                </details>
 
-                <!-- Spacing -->
-                <section class="control-group">
-                    <h3><i data-lucide="maximize"></i> Spacing</h3>
-                    <div class="radio-group-grid">
-                        <label class="radio-item">
-                            <input type="radio" name="spacing" value="small">
-                            <span>Small</span>
-                        </label>
-                        <label class="radio-item">
-                            <input type="radio" name="spacing" value="medium" checked>
-                            <span>Med</span>
-                        </label>
-                        <label class="radio-item">
-                            <input type="radio" name="spacing" value="large">
-                            <span>Large</span>
-                        </label>
-                    </div>
-                </section>
+                <!-- Group 2: Document Info -->
+                <details class="sidebar-section">
+                    <summary><i data-lucide="text-quote"></i> Document Info</summary>
+                    <div class="section-content">
+                        <div class="control-group">
+                            <div class="input-wrapper mb-2">
+                                <input type="text" id="doc-title" placeholder="Project Title" class="text-input">
+                            </div>
+                            <div class="input-wrapper mb-2">
+                                <input type="text" id="doc-subtitle" placeholder="Subtitle / Version" class="text-input">
+                            </div>
+                            <div class="input-wrapper mb-2">
+                                <input type="text" id="doc-author" placeholder="Author Name" class="text-input">
+                            </div>
+                            <div class="checkbox-row mt-2">
+                                <label class="checkbox-item">
+                                    <input type="checkbox" id="show-labels">
+                                    <span>Show Labels (Title:, Author:)</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" id="show-meta-border">
+                                    <span>Add Area Border</span>
+                                </label>
+                            </div>
+                        </div>
 
-                <!-- Margins -->
-                <section class="control-group">
-                    <h3><i data-lucide="margin"></i> Page Margins</h3>
-                    <select id="margin-preset" class="select-input">
-                        <option value="none">No Margin (0mm)</option>
-                        <option value="narrow">Narrow (5mm)</option>
-                        <option value="default" selected>Default (10mm)</option>
-                        <option value="wide">Wide (20mm)</option>
-                        <option value="custom">Custom</option>
-                    </select>
-                    <div id="custom-margin-input" class="hidden mt-2">
-                        <input type="number" id="margin-val" value="10" min="0" max="50"> <span>mm</span>
+                        <div class="control-group no-border">
+                            <h4>Date & Timing</h4>
+                            <div class="checkbox-row mb-2">
+                                <label class="checkbox-item">
+                                    <input type="checkbox" id="show-date">
+                                    <span>Include Date</span>
+                                </label>
+                            </div>
+                            <div id="date-details" class="hidden">
+                                <div class="radio-group-compact mb-2">
+                                    <label class="radio-item-mini">
+                                        <input type="radio" name="date-mode" value="auto" checked>
+                                        <span>Today</span>
+                                    </label>
+                                    <label class="radio-item-mini">
+                                        <input type="radio" name="date-mode" value="custom">
+                                        <span>Custom</span>
+                                    </label>
+                                </div>
+                                <input type="text" id="custom-date-val" placeholder="Spring 2026" class="text-input mb-2 hidden">
+                            </div>
+                        </div>
                     </div>
-                </section>
+                </details>
+
+                <!-- Group 3: Formatting & Export -->
+                <details class="sidebar-section">
+                    <summary><i data-lucide="settings"></i> Format & Branding</summary>
+                    <div class="section-content">
+                        <div class="control-group">
+                            <h4>Metadata Placement</h4>
+                            <select id="meta-position" class="select-input">
+                                <option value="topLeft">Top Left</option>
+                                <option value="topCenter">Top Center</option>
+                                <option value="bottomRight">Bottom Right</option>
+                                <option value="footer">Footer Bar</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <h4>Page Margins</h4>
+                            <select id="margin-preset" class="select-input">
+                                <option value="none">No Margin (0mm)</option>
+                                <option value="narrow">Narrow (5mm)</option>
+                                <option value="default" selected>Default (10mm)</option>
+                                <option value="wide">Wide (20mm)</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                            <div id="custom-margin-input" class="hidden mt-2">
+                                <input type="number" id="margin-val" value="10" min="0" max="50"> <span>mm</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group no-border">
+                            <h4>Branding & Count</h4>
+                            <div class="checkbox-row mb-3">
+                                <label class="checkbox-item">
+                                    <input type="checkbox" id="show-watermark" checked>
+                                    <span>Watermark (SketchGrid)</span>
+                                </label>
+                            </div>
+                            <div class="input-wrapper">
+                                <label for="page-count" class="font-tiny">Page Quantity</label>
+                                <input type="number" id="page-count" value="1" min="1" max="25" class="text-input">
+                            </div>
+                        </div>
+                    </div>
+                </details>
 
                 <div class="sidebar-footer">
                     <button id="download-pdf" class="primary-button">
                         <i data-lucide="download"></i> Generate PDF
                     </button>
+                    <p class="footer-note">Ready-to-print A4 Document</p>
                 </div>
             </div>
         </aside>
