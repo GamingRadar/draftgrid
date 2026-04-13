@@ -10,6 +10,13 @@ const CONFIG = {
     spacings: { small: 2, medium: 8, large: 15 } // Increased for better visibility
 };
 
+const PRESETS = {
+    ideation: { boxCount: 8, ratio: '2:3', spacing: 'medium' },
+    thumbnails: { boxCount: 12, ratio: '1:1', spacing: 'small' },
+    hero: { boxCount: 4, ratio: 'custom', customRatio: { w: 3, h: 4 }, spacing: 'large' },
+    storyboard: { boxCount: 6, ratio: 'custom', customRatio: { w: 16, h: 9 }, spacing: 'medium' }
+};
+
 class SketchGrid {
     constructor() {
         this.state = {
@@ -44,6 +51,8 @@ class SketchGrid {
             // Aesthetics
             strokeColor: '#1e293b',
             strokeOpacity: 1,
+            // Intelligence
+            activePreset: null,
             // UI
             rightSidebarOpen: true,
             leftSidebarOpen: false 
@@ -120,7 +129,8 @@ class SketchGrid {
             pCount: document.getElementById('p-count'),
             downloadBtn: document.getElementById('download-pdf'),
             mobileToggleLeft: document.getElementById('mobile-toggle-left'),
-            mobileToggleRight: document.getElementById('mobile-toggle-right')
+            mobileToggleRight: document.getElementById('mobile-toggle-right'),
+            presetCards: document.querySelectorAll('.preset-card')
         };
         this.ctx = this.els.canvas.getContext('2d');
     }
@@ -135,18 +145,30 @@ class SketchGrid {
         this.bindRadio('orientation', 'headerOrientation');
         this.bindRadio('dimension', 'headerDimension');
 
+        // Presets
+        this.els.presetCards.forEach(card => {
+            card.onclick = () => this.applyPreset(card.dataset.preset);
+        });
+
+        // Left Sidebar
         this.els.boxCountInput.oninput = (e) => {
             const val = parseInt(e.target.value);
             this.els.boxCountDisplay.textContent = val;
-            this.updateState({ boxCount: val });
+            this.updateState({ boxCount: val, activePreset: null });
         };
         this.bindRadio('ratio', 'ratioInputs', (val) => {
             this.els.customRatioInputs.classList.toggle('hidden', val !== 'custom');
+            this.updateState({ activePreset: null });
         });
         [this.els.ratioW, this.els.ratioH].forEach(el => el.oninput = () => {
-            this.updateState({ customRatio: { w: parseFloat(this.els.ratioW.value)||1, h: parseFloat(this.els.ratioH.value)||1 } });
+            this.updateState({ 
+                customRatio: { w: parseFloat(this.els.ratioW.value)||1, h: parseFloat(this.els.ratioH.value)||1 },
+                activePreset: null
+            });
         });
-        this.bindRadio('spacing', 'spacingInputs');
+        this.bindRadio('spacing', 'spacingInputs', () => {
+            this.updateState({ activePreset: null });
+        });
         this.els.marginSelect.onchange = (e) => {
             const isCustom = e.target.value === 'custom';
             this.els.marginValInput.classList.toggle('hidden', !isCustom);
@@ -233,6 +255,27 @@ class SketchGrid {
         this.els.paperPreview.className = `preview-paper ${this.state.orientation}`;
         if (this.state.dimension === '3d') document.getElementById('2d-only').style.display = 'none';
         else document.getElementById('2d-only').style.display = 'block';
+
+        // Update Preset Active State
+        this.els.presetCards.forEach(card => {
+            card.classList.toggle('active', card.dataset.preset === this.state.activePreset);
+        });
+
+        // Sync inputs if changed via preset
+        this.els.boxCountInput.value = this.state.boxCount;
+        this.els.boxCountDisplay.textContent = this.state.boxCount;
+        this.els.ratioInputs.forEach(input => input.checked = input.value === this.state.ratio);
+        this.els.customRatioInputs.classList.toggle('hidden', this.state.ratio !== 'custom');
+        this.els.ratioW.value = this.state.customRatio.w;
+        this.els.ratioH.value = this.state.customRatio.h;
+        this.els.spacingInputs.forEach(input => input.checked = input.value === this.state.spacing);
+    }
+
+    applyPreset(id) {
+        const preset = PRESETS[id];
+        if (!preset) return;
+        this.updateState({ ...preset, activePreset: id, dimension: '2d' });
+        lucide.createIcons();
     }
 
     getBoxRatio() {
