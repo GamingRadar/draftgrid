@@ -329,6 +329,40 @@ body {
     text-align: center;
 }
 
+.label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.label-row label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.label-row span, .reset-mini {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.reset-mini {
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    padding: 0 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.reset-mini:hover {
+    background: var(--accent);
+    color: white;
+}
+
 .input-wrapper {
     display: flex;
     align-items: center;
@@ -359,18 +393,27 @@ body {
 }
 
 /* Radio Grid Groups */
-.radio-group,
 .radio-group-grid {
     display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 6px;
 }
 
-.radio-group {
-    grid-template-columns: 1fr 1fr;
+#measurements {
+    background: var(--bg-app);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    margin-top: 10px;
 }
 
-.radio-group-grid {
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+#measurements .label-row label {
+    font-size: 0.65rem;
+    opacity: 0.8;
+}
+
+#measurements input[type="range"] {
+    height: 4px;
 }
 
 .radio-item span {

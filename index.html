@@ -30,7 +30,7 @@
                 </label>
                 <label class="mode-btn">
                     <input type="radio" name="dimension" value="3d">
-                    <span>3D Isometric</span>
+                    <span>3D Engine</span>
                 </label>
             </div>
             <div class="orientation-toggle">
@@ -49,114 +49,174 @@
                 <i data-lucide="sun" id="theme-icon-sun"></i>
                 <i data-lucide="moon" id="theme-icon-moon" class="hidden"></i>
             </button>
-            <button id="toggle-right-sidebar" class="primary-icon-button" title="Customize">
+            <button id="toggle-right-sidebar" class="primary-icon-button" title="Global Settings">
                 <i data-lucide="settings-2"></i>
-                <span>Customize</span>
+                <span>Settings</span>
             </button>
         </div>
     </header>
 
     <div class="app-main">
-        <!-- Left Sidebar: Format & Branding -->
+        <!-- Left Sidebar: Construction Tools (Mode Specific) -->
         <aside class="sidebar left-sidebar" id="left-sidebar">
             <div class="sidebar-scroll">
-                <section class="sidebar-section">
-                    <div class="section-title"><i data-lucide="zap"></i> Quick Start Presets</div>
-                    <div class="section-content">
-                        <div class="preset-grid">
-                            <button class="preset-card" data-preset="ideation">
-                                <i data-lucide="lightbulb"></i>
-                                <span>Ideation</span>
-                            </button>
-                            <button class="preset-card" data-preset="thumbnails">
-                                <i data-lucide="grid-3x3"></i>
-                                <span>Thumbnails</span>
-                            </button>
-                            <button class="preset-card" data-preset="hero">
-                                <i data-lucide="image"></i>
-                                <span>Hero Frames</span>
-                            </button>
-                            <button class="preset-card" data-preset="storyboard">
-                                <i data-lucide="film"></i>
-                                <span>Storyboard</span>
-                            </button>
-                        </div>
-                    </div>
-                </section>
-                <details class="sidebar-section" open>
-                    <summary><i data-lucide="layout"></i> Grid Config</summary>
-                    <div class="section-content">
-                        <div class="control-group" id="2d-only">
-                            <h4>Box Count (2-12)</h4>
-                            <div class="input-wrapper">
-                                <input type="range" id="box-count" min="2" max="12" value="6">
-                                <span id="box-count-display">6</span>
+                
+                <!-- 2D SPECIFIC SIDEBAR -->
+                <div id="ui-2d-only">
+                    <section class="sidebar-section">
+                        <div class="section-title"><i data-lucide="zap"></i> 2D Presets</div>
+                        <div class="section-content">
+                            <div class="preset-grid">
+                                <button class="preset-card" data-preset="ideation"><i data-lucide="lightbulb"></i><span>Ideation</span></button>
+                                <button class="preset-card" data-preset="thumbnails"><i data-lucide="grid-3x3"></i><span>Thumbnails</span></button>
+                                <button class="preset-card" data-preset="hero"><i data-lucide="image"></i><span>Hero</span></button>
+                                <button class="preset-card" data-preset="storyboard"><i data-lucide="film"></i><span>Story</span></button>
                             </div>
                         </div>
-                        <div class="control-group">
-                            <h4>Aspect Ratio</h4>
-                            <div class="radio-group-grid">
-                                <label class="radio-item"><input type="radio" name="ratio" value="1:1" checked><span>1:1</span></label>
-                                <label class="radio-item"><input type="radio" name="ratio" value="2:3"><span>2:3</span></label>
-                                <label class="radio-item"><input type="radio" name="ratio" value="3:4"><span>3:4</span></label>
-                                <label class="radio-item"><input type="radio" name="ratio" value="custom"><span>Custom</span></label>
+                    </section>
+                    <details class="sidebar-section" open>
+                        <summary><i data-lucide="layout"></i> Grid Config (2D)</summary>
+                        <div class="section-content">
+                            <div class="control-group">
+                                <h4>Box Count</h4>
+                                <div class="input-wrapper">
+                                    <input type="range" id="box-count-2d" min="2" max="12" value="6">
+                                    <span id="box-count-display-2d">6</span>
+                                </div>
                             </div>
-                            <div id="custom-ratio-inputs" class="hidden mt-2">
-                                <div class="input-row">
-                                    <input type="number" id="ratio-w" value="16" step="0.1">
-                                    <span>:</span>
-                                    <input type="number" id="ratio-h" value="9" step="0.1">
+                            <div class="control-group">
+                                <h4>2D Primitives</h4>
+                                <div class="radio-group-grid">
+                                    <label class="radio-item"><input type="radio" name="prime-2d" value="rect" checked><span>Rect</span></label>
+                                    <label class="radio-item"><input type="radio" name="prime-2d" value="circle"><span>Circle</span></label>
+                                    <label class="radio-item"><input type="radio" name="prime-2d" value="triangle"><span>Tri</span></label>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <h4>Aspect Ratio</h4>
+                                <div class="radio-group-grid">
+                                    <label class="radio-item"><input type="radio" name="ratio" value="1:1" checked><span>1:1</span></label>
+                                    <label class="radio-item"><input type="radio" name="ratio" value="2:3"><span>2:3</span></label>
+                                    <label class="radio-item"><input type="radio" name="ratio" value="3:4"><span>3:4</span></label>
+                                    <label class="radio-item"><input type="radio" name="ratio" value="custom"><span>Custom</span></label>
+                                </div>
+                                <div id="custom-ratio-inputs" class="hidden mt-2">
+                                    <div class="input-row">
+                                        <input type="number" id="ratio-w" value="16" step="0.1" class="text-input mini" style="width:40px">
+                                        <span>:</span>
+                                        <input type="number" id="ratio-h" value="9" step="0.1" class="text-input mini" style="width:40px">
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="control-group no-border">
-                            <h4>Spacing</h4>
-                            <div class="radio-group-grid">
-                                <label class="radio-item"><input type="radio" name="spacing" value="small"><span>S</span></label>
-                                <label class="radio-item"><input type="radio" name="spacing" value="medium" checked><span>M</span></label>
-                                <label class="radio-item"><input type="radio" name="spacing" value="large"><span>L</span></label>
-                            </div>
-                        </div>
-                    </div>
-                </details>
+                    </details>
+                </div>
 
-                <details class="sidebar-section" open>
-                    <summary><i data-lucide="printer"></i> Format & Pages</summary>
-                    <div class="section-content">
-                        <div class="control-group">
-                            <h4>Page Margins</h4>
-                            <select id="margin-preset" class="select-input">
-                                <option value="none">Min (2mm)</option>
-                                <option value="narrow">Narrow (5mm)</option>
-                                <option value="default" selected>Default (10mm)</option>
-                                <option value="wide">Wide (20mm)</option>
-                                <option value="custom">Custom</option>
-                            </select>
-                            <input type="number" id="margin-val" value="10" class="text-input mt-2 hidden">
-                        </div>
-                        <div class="control-group">
-                            <label class="checkbox-item mb-2">
-                                <input type="checkbox" id="show-page-numbers" checked>
-                                <span>Add Page Numbers</span>
-                            </label>
-                        </div>
-                        <div class="control-group no-border">
-                            <label class="checkbox-item mb-2">
-                                <input type="checkbox" id="show-watermark" checked>
-                                <span>Watermark</span>
-                            </label>
-                            <div class="input-wrapper">
-                                <label class="font-tiny">Quantity</label>
-                                <input type="number" id="page-count" value="1" min="1" max="25" class="text-input">
+                <!-- 3D SPECIFIC SIDEBAR -->
+                <div id="ui-3d-only" class="hidden">
+                    <section class="sidebar-section">
+                        <div class="section-title"><i data-lucide="zap"></i> 3D Presets</div>
+                        <div class="section-content">
+                            <div class="preset-grid">
+                                <button class="preset-card" data-preset="study-box"><i data-lucide="box"></i><span>Box Study</span></button>
+                                <button class="preset-card" data-preset="hero-sphere"><i data-lucide="circle"></i><span>Sphere</span></button>
+                                <button class="preset-card" data-preset="product-cyl"><i data-lucide="database"></i><span>Cylinder</span></button>
+                                <button class="preset-card" data-preset="complex-3d"><i data-lucide="layers"></i><span>Complex</span></button>
                             </div>
                         </div>
-                    </div>
-                </details>
+                    </section>
+                    <details class="sidebar-section" open>
+                        <summary><i data-lucide="box"></i> Geometry Engine (3D)</summary>
+                        <div class="section-content">
+                            <div class="control-group">
+                                <h4>Object Quantity</h4>
+                                <div class="input-wrapper">
+                                    <input type="range" id="box-count-3d" min="1" max="8" value="4">
+                                    <span id="box-count-display-3d">4</span>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <h4>Base Primitive</h4>
+                                <div class="radio-group-grid">
+                                    <label class="radio-item"><input type="radio" name="shape" value="cube" checked><span>Cuboid</span></label>
+                                    <label class="radio-item"><input type="radio" name="shape" value="sphere"><span>Sphere</span></label>
+                                    <label class="radio-item"><input type="radio" name="shape" value="cylinder"><span>Cyl/Cone</span></label>
+                                </div>
+                            </div>
+                            <div class="control-group" id="measurements">
+                                <h4>Measurements</h4>
+                                <div id="m-cuboid">
+                                    <div class="input-row mb-2">
+                                        <label class="font-tiny" style="width: 50px;">Length</label>
+                                        <input type="number" id="dim-l" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                    </div>
+                                    <div class="input-row mb-2">
+                                        <label class="font-tiny" style="width: 50px;">Breadth</label>
+                                        <input type="number" id="dim-b" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                    </div>
+                                    <div class="input-row">
+                                        <label class="font-tiny" style="width: 50px;">Height</label>
+                                        <input type="number" id="dim-h" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                    </div>
+                                </div>
+                                <div id="m-sphere" class="hidden">
+                                    <div class="input-row mb-2">
+                                        <label class="font-tiny" style="width: 50px;">Radius X</label>
+                                        <input type="number" id="dim-rx" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                    </div>
+                                    <div class="input-row mb-2">
+                                        <label class="font-tiny" style="width: 50px;">Radius Y</label>
+                                        <input type="number" id="dim-ry" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                    </div>
+                                    <div class="input-row">
+                                        <label class="font-tiny" style="width: 50px;">Radius Z</label>
+                                        <input type="number" id="dim-rz" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                    </div>
+                                </div>
+                                <div id="m-cylinder" class="hidden">
+                                    <div class="input-row mb-2">
+                                        <label class="font-tiny" style="width: 50px;">Top Rad</label>
+                                        <input type="number" id="dim-rt" min="0" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                    </div>
+                                    <div class="input-row mb-2">
+                                        <label class="font-tiny" style="width: 50px;">Bot Rad</label>
+                                        <input type="number" id="dim-rbot" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                    </div>
+                                    <div class="input-row">
+                                        <label class="font-tiny" style="width: 50px;">Height</label>
+                                        <input type="number" id="dim-ch" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="control-group no-border">
+                                <div class="label-row"><label>Zoom/Depth</label><span id="shape-depth-val">50%</span></div>
+                                <input type="range" id="shape-depth" min="10" max="150" value="50" class="mb-2">
+                                <div class="label-row"><label>Inline Density</label><span id="inline-density-val">5</span></div>
+                                <input type="range" id="inline-density" min="0" max="10" value="5">
+                            </div>
+                        </div>
+                    </details>
+                    <details class="sidebar-section" open>
+                        <summary><i data-lucide="video"></i> View Orientation</summary>
+                        <div class="section-content">
+                            <div class="control-group no-border">
+                                <div class="label-row"><label>Rotation X</label><button class="reset-mini" data-reset="rotX">0°</button></div>
+                                <input type="range" id="shape-rot-x" min="-180" max="180" value="0" class="mb-2">
+                                <div class="label-row"><label>Rotation Y</label><button class="reset-mini" data-reset="rotY">0°</button></div>
+                                <input type="range" id="shape-rot-y" min="-180" max="180" value="0" class="mb-2">
+                                <div class="label-row"><label>Rotation Z</label><button class="reset-mini" data-reset="rotZ">0°</button></div>
+                                <input type="range" id="shape-rot-z" min="-180" max="180" value="0" class="mb-2">
+                                <div class="checkbox-row">
+                                    <label class="checkbox-item"><input type="checkbox" id="three-d-xray"><span>X-Ray</span></label>
+                                    <label class="checkbox-item"><input type="checkbox" id="three-d-grid"><span>Inline Grid</span></label>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
             </div>
             <div class="sidebar-footer">
-                <button id="download-pdf" class="primary-button">
-                    <i data-lucide="download"></i> Export PDF
-                </button>
+                <button id="download-pdf" class="primary-button"><i data-lucide="download"></i> Export PDF</button>
             </div>
         </aside>
 
@@ -172,32 +232,29 @@
             </div>
         </main>
 
-        <!-- Right Drawer: Customize -->
+        <!-- Right Drawer: Shared Global Settings -->
         <aside class="sidebar right-sidebar" id="right-sidebar">
             <div class="sidebar-scroll">
                 <details class="sidebar-section" open>
-                    <summary><i data-lucide="shield-check"></i> Smart Engine</summary>
+                    <summary><i data-lucide="layout-template"></i> Layout & Grid</summary>
                     <div class="section-content">
                         <div class="control-group">
-                            <h4>Header Space</h4>
-                            <label class="checkbox-item mb-2">
-                                <input type="checkbox" id="reserve-header">
-                                <span>Manual Header Reserve</span>
-                            </label>
-                            <div class="slider-with-label">
-                                <input type="range" id="header-height" min="10" max="40" value="15">
-                                <span class="val-badge" id="header-height-display">15mm</span>
-                            </div>
+                            <h4>Page Margins</h4>
+                            <select id="margin-preset" class="select-input">
+                                <option value="none">Min (2mm)</option>
+                                <option value="narrow">Narrow (5mm)</option>
+                                <option value="default" selected>Default (10mm)</option>
+                                <option value="wide">Wide (20mm)</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                            <input type="number" id="margin-val" value="10" class="text-input mt-2 hidden">
                         </div>
                         <div class="control-group no-border">
-                            <h4>Footer Space</h4>
-                            <label class="checkbox-item mb-2">
-                                <input type="checkbox" id="reserve-footer">
-                                <span>Manual Footer Reserve</span>
-                            </label>
-                            <div class="slider-with-label">
-                                <input type="range" id="footer-height" min="10" max="40" value="15">
-                                <span class="val-badge" id="footer-height-display">15mm</span>
+                            <h4>Gutter Spacing</h4>
+                            <div class="radio-group-grid" id="spacing-group">
+                                <label class="radio-item"><input type="radio" name="spacing" value="small"><span>Small</span></label>
+                                <label class="radio-item"><input type="radio" name="spacing" value="medium" checked><span>Med</span></label>
+                                <label class="radio-item"><input type="radio" name="spacing" value="large"><span>Large</span></label>
                             </div>
                         </div>
                     </div>
@@ -212,41 +269,26 @@
                             <input type="text" id="doc-author" placeholder="Author Name" class="text-input">
                         </div>
                         <div class="checkbox-row mt-2">
-                            <label class="checkbox-item">
-                                <input type="checkbox" id="show-labels" checked>
-                                <span>Full Labels (Author: )</span>
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" id="show-meta-border">
-                                <span>Title Block Border</span>
-                            </label>
+                            <label class="checkbox-item"><input type="checkbox" id="show-labels" checked><span>Labels</span></label>
+                            <label class="checkbox-item"><input type="checkbox" id="show-meta-border"><span>Borders</span></label>
                         </div>
                     </div>
                 </details>
 
                 <details class="sidebar-section">
-                    <summary><i data-lucide="calendar"></i> Date System</summary>
+                    <summary><i data-lucide="calendar"></i> Date & Output</summary>
                     <div class="section-content">
-                        <div class="checkbox-row mb-2">
-                            <label class="checkbox-item">
-                                <input type="checkbox" id="show-date" checked>
-                                <span>Include Date</span>
-                            </label>
-                        </div>
+                        <label class="checkbox-item mb-2"><input type="checkbox" id="show-date" checked><span>Include Date</span></label>
                         <div id="date-details">
                             <div class="radio-group-compact mb-2">
                                 <label class="radio-item-mini"><input type="radio" name="date-mode" value="auto" checked><span>Today</span></label>
                                 <label class="radio-item-mini"><input type="radio" name="date-mode" value="custom"><span>Custom</span></label>
                             </div>
-                            <input type="text" id="custom-date-val" placeholder="e.g. Spring 2026" class="text-input mb-2 hidden">
-                            <h4>Date Format</h4>
-                            <select id="date-format" class="select-input">
-                                <option value="DD-MM-YYYY">DD-MM-YYYY</option>
-                                <option value="MM-DD-YYYY">MM-DD-YYYY</option>
-                                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                                <option value="DD/MM/YY">DD/MM/YY</option>
-                            </select>
+                            <input type="text" id="custom-date-val" placeholder="Custom Date" class="text-input mb-2 hidden">
                         </div>
+                        <label class="checkbox-item mb-2"><input type="checkbox" id="show-page-numbers" checked><span>Page Numbers</span></label>
+                        <label class="checkbox-item mb-2"><input type="checkbox" id="show-watermark" checked><span>Watermark</span></label>
+                        <div class="input-wrapper"><label class="font-tiny">Sheet Count</label><input type="number" id="page-count" value="1" min="1" max="25" class="text-input"></div>
                     </div>
                 </details>
 
@@ -254,10 +296,9 @@
                     <summary><i data-lucide="palette"></i> Grid Aesthetics</summary>
                     <div class="section-content">
                         <div class="control-group no-border">
-                            <h4>Grid Outline</h4>
-                            <div class="input-row">
+                            <div class="input-row" style="display:flex; align-items:center; gap:10px">
                                 <input type="color" id="stroke-color" value="#1e293b" class="color-picker">
-                                <input type="range" id="stroke-opacity" min="0.1" max="1" step="0.1" value="1">
+                                <input type="range" id="stroke-opacity" min="0.1" max="1" step="0.1" value="1" style="flex:1">
                             </div>
                         </div>
                     </div>
@@ -269,14 +310,10 @@
         </aside>
     </div>
 
-    <!-- Mobile Navigation Buttons -->
+    <!-- Mobile Navigation -->
     <nav class="mobile-nav">
-        <button id="mobile-toggle-left" class="mobile-fab" title="Export Settings">
-            <i data-lucide="file-text"></i>
-        </button>
-        <button id="mobile-toggle-right" class="mobile-fab accent" title="Customize">
-            <i data-lucide="sliders"></i>
-        </button>
+        <button id="mobile-toggle-left" class="mobile-fab" title="Tools"><i data-lucide="pen-tool"></i></button>
+        <button id="mobile-toggle-right" class="mobile-fab accent" title="Settings"><i data-lucide="sliders"></i></button>
     </nav>
 
     <script src="app.js"></script>
