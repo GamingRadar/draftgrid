@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SketchGrid - Premium Drawing Guides</title>
+    <meta name="description" content="Generate custom printable A4 drawing guides with precision ratios and margins. Perfect for concept art and product design.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="theme-light">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <header class="sidebar-header">
+                <div class="logo">
+                    <i data-lucide="grid-3x3" class="logo-icon"></i>
+                    <h1>SketchGrid</h1>
+                </div>
+                <button id="theme-toggle" class="icon-button" title="Toggle Dark Mode">
+                    <i data-lucide="sun" id="theme-icon-sun"></i>
+                    <i data-lucide="moon" id="theme-icon-moon" class="hidden"></i>
+                </button>
+            </header>
+
+            <div class="sidebar-content">
+                <!-- Page Setup -->
+                <section class="control-group">
+                    <h3><i data-lucide="file-text"></i> Page Setup</h3>
+                    <div class="radio-group">
+                        <label class="radio-item">
+                            <input type="radio" name="orientation" value="portrait" checked>
+                            <span>Portrait</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="orientation" value="landscape">
+                            <span>Landscape</span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Layout -->
+                <section class="control-group">
+                    <h3><i data-lucide="layout-grid"></i> Layout</h3>
+                    <div class="input-wrapper">
+                        <label for="box-count">Number of Rectangles (2-12)</label>
+                        <input type="range" id="box-count" min="2" max="12" value="6">
+                        <span id="box-count-display">6</span>
+                    </div>
+                </section>
+
+                <!-- Aspect Ratio -->
+                <section class="control-group">
+                    <h3><i data-lucide="aspect-ratio"></i> Aspect Ratio</h3>
+                    <div class="radio-group-grid">
+                        <label class="radio-item">
+                            <input type="radio" name="ratio" value="1:1" checked>
+                            <span>1:1</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="ratio" value="2:3">
+                            <span>2:3</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="ratio" value="3:4">
+                            <span>3:4</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="ratio" value="custom">
+                            <span>Custom</span>
+                        </label>
+                    </div>
+                    <div id="custom-ratio-inputs" class="hidden">
+                        <div class="input-row">
+                            <input type="number" id="ratio-w" value="16" placeholder="W">
+                            <span>:</span>
+                            <input type="number" id="ratio-h" value="9" placeholder="H">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Spacing -->
+                <section class="control-group">
+                    <h3><i data-lucide="maximize"></i> Spacing</h3>
+                    <div class="radio-group-grid">
+                        <label class="radio-item">
+                            <input type="radio" name="spacing" value="small">
+                            <span>Small</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="spacing" value="medium" checked>
+                            <span>Med</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="spacing" value="large">
+                            <span>Large</span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Margins -->
+                <section class="control-group">
+                    <h3><i data-lucide="margin"></i> Page Margins</h3>
+                    <select id="margin-preset" class="select-input">
+                        <option value="none">No Margin (0mm)</option>
+                        <option value="narrow">Narrow (5mm)</option>
+                        <option value="default" selected>Default (10mm)</option>
+                        <option value="wide">Wide (20mm)</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                    <div id="custom-margin-input" class="hidden mt-2">
+                        <input type="number" id="margin-val" value="10" min="0" max="50"> <span>mm</span>
+                    </div>
+                </section>
+
+                <div class="sidebar-footer">
+                    <button id="download-pdf" class="primary-button">
+                        <i data-lucide="download"></i> Generate PDF
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content (Preview) -->
+        <main class="preview-area">
+            <div class="preview-container">
+                <div class="preview-paper" id="paper-preview">
+                    <canvas id="grid-canvas"></canvas>
+                </div>
+                <div class="preview-info">
+                    <span id="p-orientation">Portrait</span> · <span id="p-ratio">1:1</span> · <span id="p-count">6 Boxes</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Analytics Placeholder -->
+    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script> -->
+
+    <script src="app.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
