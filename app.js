@@ -35,7 +35,7 @@ class SketchGrid {
             projectionMode: 'persp',
             isXray: false,
             showInlineGrid: false,
-            shapeDepth: 50,
+            shapeDepth: 100,
             inlineDensity: 5,
             rotX: 15,
             rotY: 45,
@@ -47,7 +47,8 @@ class SketchGrid {
             prime2D: 'rect',
             // UI
             rightSidebarOpen: true,
-            leftSidebarOpen: true
+            leftSidebarOpen: true,
+            zoomLevel: 0.6 // Increased default preview size
         };
 
         this.PRESETS_2D = {
@@ -235,6 +236,20 @@ class SketchGrid {
         safeBind(this.els.downloadBtn, 'onclick', () => this.handleDownload());
 
         window.onresize = () => this.render();
+
+        // Setup Wheel Zoom
+        const previewContainer = this.els.paperPreview?.parentElement;
+        if (previewContainer) {
+            previewContainer.addEventListener('wheel', (e) => {
+                if (e.ctrlKey || e.metaKey || true) { // Allow zooming anywhere on paper container
+                    e.preventDefault();
+                    const delta = e.deltaY > 0 ? -0.05 : 0.05;
+                    this.state.zoomLevel = Math.max(0.1, Math.min(3.0, this.state.zoomLevel + delta));
+                    this.els.paperPreview.style.width = (this.els.canvas.width * this.state.zoomLevel) + 'px';
+                    this.els.paperPreview.style.height = (this.els.canvas.height * this.state.zoomLevel) + 'px';
+                }
+            }, { passive: false });
+        }
     }
 
     resetMeasurements() {
@@ -361,7 +376,6 @@ class SketchGrid {
 
         const usableW = canvasW - (margin * 2);
         const usableH = canvasH - (margin * 2) - headerH - footerH;
-        const startY = margin + headerH;
 
         let ratio = 1;
         if (this.state.dimension === '2d') {
@@ -385,10 +399,27 @@ class SketchGrid {
         if (orientation === 'landscape' && count > 2) [cols, rows] = [rows, cols];
 
         const spacingPx = this.state.spacing === 'small' ? 2 : (this.state.spacing === 'medium' ? 5 : 10);
-        const boxW = (usableW - (cols - 1) * spacingPx) / cols;
-        const boxH = (usableH - (rows - 1) * spacingPx) / rows;
+        let maxBoxW = (usableW - (cols - 1) * spacingPx) / cols;
+        let maxBoxH = (usableH - (rows - 1) * spacingPx) / rows;
 
-        return { canvasW, canvasH, boxW, boxH, cols, rows, margin, startY, spacingPx };
+        let boxW = maxBoxW;
+        let boxH = maxBoxH;
+        let startX = margin;
+        let startY = margin + headerH;
+
+        if (this.state.dimension === '2d') {
+            if (maxBoxW / ratio <= maxBoxH) {
+                boxH = maxBoxW / ratio;
+            } else {
+                boxW = maxBoxH * ratio;
+            }
+            let actualW = boxW * cols + spacingPx * (cols - 1);
+            let actualH = boxH * rows + spacingPx * (rows - 1);
+            startX = margin + (usableW - actualW) / 2;
+            startY = margin + headerH + (usableH - actualH) / 2;
+        }
+
+        return { canvasW, canvasH, boxW, boxH, cols, rows, margin, startX, startY, spacingPx };
     }
 
     getMargin() {
@@ -404,8 +435,8 @@ class SketchGrid {
         const mmToPx = 3.7795275591;
         this.els.canvas.width = layout.canvasW * mmToPx;
         this.els.canvas.height = layout.canvasH * mmToPx;
-        this.els.paperPreview.style.width = this.els.canvas.width / 4 + 'px';
-        this.els.paperPreview.style.height = this.els.canvas.height / 4 + 'px';
+        this.els.paperPreview.style.width = (this.els.canvas.width * this.state.zoomLevel) + 'px';
+        this.els.paperPreview.style.height = (this.els.canvas.height * this.state.zoomLevel) + 'px';
 
         const ctx = this.ctx;
         ctx.clearRect(0, 0, this.els.canvas.width, this.els.canvas.height);
@@ -424,7 +455,7 @@ class SketchGrid {
 
         for (let r = 0; r < L.rows; r++) {
             for (let c = 0; c < L.cols; c++) {
-                const bx = L.margin + c * (L.boxW + L.spacingPx);
+                const bx = L.startX + c * (L.boxW + L.spacingPx);
                 const by = L.startY + r * (L.boxH + L.spacingPx);
                 if (this.state.dimension === '3d') {
                     this.draw3DShape(ctx, bx, by, L.boxW, L.boxH, mmToPx);
@@ -458,8 +489,8 @@ class SketchGrid {
     draw3DShape(ctx, x, y, w, h, mmToPx) {
         const centerX = x + w / 2;
         const centerY = y + h / 2;
-        const size = Math.min(w, h) * 0.45;
-        const zoom = (this.state.shapeDepth / 100) * 1.5;
+        const size = Math.min(w, h) * 0.45 * (this.state.shapeDepth / 100);
+        const zoom = 1.5;
 
         const rad = (d) => (d * Math.PI) / 180;
         const ax = rad(this.state.rotX), ay = rad(this.state.rotY), az = rad(this.state.rotZ);
@@ -467,18 +498,21 @@ class SketchGrid {
         const project = (px, py, pz) => {
             let sx, sy, sz;
             if (this.state.shapeType === 'cube') {
-                sx = px * this.state.dimL;
-                sy = py * this.state.dimH;
-                sz = pz * this.state.dimB;
+                const maxDim = Math.max(this.state.dimL, this.state.dimB, this.state.dimH);
+                sx = px * (this.state.dimL / maxDim);
+                sy = py * (this.state.dimH / maxDim);
+                sz = pz * (this.state.dimB / maxDim);
             } else if (this.state.shapeType === 'sphere') {
-                sx = px * this.state.dimRX;
-                sy = py * this.state.dimRY;
-                sz = pz * this.state.dimRZ;
+                const maxDim = Math.max(this.state.dimRX, this.state.dimRY, this.state.dimRZ);
+                sx = px * (this.state.dimRX / maxDim);
+                sy = py * (this.state.dimRY / maxDim);
+                sz = pz * (this.state.dimRZ / maxDim);
             } else {
+                const maxDim = Math.max(this.state.dimRT, this.state.dimRBot, this.state.dimCH / 2);
                 const heightR = (py + size / 2) / size;
                 const currentR = this.state.dimRBot * (1 - heightR) + this.state.dimRT * heightR;
-                sx = px * currentR; sz = pz * currentR;
-                sy = py * this.state.dimCH;
+                sx = px * (currentR / maxDim); sz = pz * (currentR / maxDim);
+                sy = py * (this.state.dimCH / (maxDim * 2));
             }
 
             let y1 = sy * Math.cos(ax) - sz * Math.sin(ax);
@@ -584,16 +618,65 @@ class SketchGrid {
     drawBars(ctx, L) {
         ctx.globalAlpha = 1;
         ctx.strokeStyle = this.state.strokeColor;
+        ctx.fillStyle = this.state.strokeColor;
+
+        // Header
         const hasHeader = this.state.reserveHeader || this.state.title || this.state.author;
         if (hasHeader) {
             const h = this.state.headerHeight;
             if (this.state.showMetaBorder) ctx.strokeRect(L.margin, L.margin, L.canvasW - L.margin * 2, h);
-            ctx.fillStyle = this.state.strokeColor; ctx.font = "bold 4mm Outfit";
-            let t = this.state.title || "SKETCHGRID DOCUMENT"; if (this.state.showLabels) t = `TITLE: ${t}`;
-            ctx.fillText(t.toUpperCase(), L.margin + 2, L.margin + h / 2 + 2);
-            ctx.font = "3mm Inter";
-            let a = this.state.author || "ANONYMOUS"; if (this.state.showLabels) a = `AUTHOR: ${a}`;
-            ctx.textAlign = "right"; ctx.fillText(a, L.canvasW - L.margin - 2, L.margin + h / 2 + 2);
+            
+            ctx.textAlign = "left";
+            ctx.font = "bold 3px Outfit";
+            let t = this.state.title || "SKETCHGRID"; 
+            if (this.state.showLabels) t = `TITLE: ${t}`;
+            ctx.fillText(t.toUpperCase(), L.margin + 2, L.margin + h / 2 + 1);
+            
+            ctx.font = "1.5px Inter";
+            let sub = this.state.subtitle || ""; 
+            if (sub) ctx.fillText(sub.toUpperCase(), L.margin + 2, L.margin + h / 2 + 3.5);
+
+            ctx.textAlign = "right";
+            ctx.font = "2px Inter";
+            let a = this.state.author || "ANONYMOUS"; 
+            if (this.state.showLabels) a = `AUTHOR: ${a}`;
+            ctx.fillText(a.toUpperCase(), L.canvasW - L.margin - 2, L.margin + h / 2 + 1);
+        }
+
+        // Footer
+        const hasFooter = this.state.reserveFooter || this.state.showDate || this.state.showPageNumbers;
+        if (hasFooter) {
+            const h = this.state.footerHeight;
+            const fy = L.canvasH - L.margin - h;
+            if (this.state.showMetaBorder) ctx.strokeRect(L.margin, fy, L.canvasW - L.margin * 2, h);
+            
+            ctx.font = "2px Inter";
+            
+            if (this.state.showDate) {
+                ctx.textAlign = "left";
+                let d = this.getFormattedDate();
+                if (this.state.showLabels) d = `DATE: ${d}`;
+                ctx.fillText(d.toUpperCase(), L.margin + 2, fy + h / 2 + 0.5);
+            }
+            
+            if (this.state.showPageNumbers) {
+                ctx.textAlign = "right";
+                let p = L.pageNum ? `PAGE ${L.pageNum}` : `PAGE 1 OF ${this.state.pageCount}`; 
+                ctx.fillText(p, L.canvasW - L.margin - 2, fy + h / 2 + 0.5);
+            }
+        }
+
+        // Watermark
+        if (this.state.showWatermark) {
+            ctx.save();
+            ctx.globalAlpha = 0.05;
+            ctx.translate(L.canvasW / 2, L.canvasH / 2);
+            ctx.rotate(-Math.PI / 4);
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.font = "bold 24px Outfit";
+            ctx.fillText("SKETCHGRID", 0, 0);
+            ctx.restore();
         }
     }
 
