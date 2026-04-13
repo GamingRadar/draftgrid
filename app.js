@@ -1,31 +1,20 @@
 /**
- * SketchGrid - App Logic
+ * SketchGrid - Professional Drawing Workspace
  */
 
 const { jsPDF } = window.jspdf;
 
 const CONFIG = {
-    A4: {
-        width: 210,
-        height: 297
-    },
-    margins: {
-        none: 0,
-        narrow: 5,
-        default: 10,
-        wide: 20
-    },
-    spacings: {
-        small: 2,
-        medium: 5,
-        large: 10
-    }
+    A4: { width: 210, height: 297 },
+    margins: { none: 2, narrow: 5, default: 10, wide: 20 },
+    spacings: { small: 2, medium: 8, large: 15 } // Increased for better visibility
 };
 
 class SketchGrid {
     constructor() {
         this.state = {
             orientation: 'portrait',
+            dimension: '2d',
             boxCount: 6,
             ratio: '1:1',
             customRatio: { w: 16, h: 9 },
@@ -33,18 +22,31 @@ class SketchGrid {
             marginPreset: 'default',
             customMargin: 10,
             theme: 'light',
-            // Stage 2
+            // Metadata
             title: '',
             subtitle: '',
             author: '',
-            showLabels: false,
+            showLabels: true,
             showMetaBorder: false,
-            showDate: false,
+            // Smart Engine V2
+            reserveHeader: false,
+            reserveFooter: false,
+            headerHeight: 15, // mm
+            footerHeight: 15, // mm
+            showDate: true,
             dateMode: 'auto',
             customDate: '',
-            metaPosition: 'topLeft',
+            dateFormat: 'DD-MM-YYYY',
+            // Branding/Output
             showWatermark: true,
-            pageCount: 1
+            showPageNumbers: true,
+            pageCount: 1,
+            // Aesthetics
+            strokeColor: '#1e293b',
+            strokeOpacity: 1,
+            // UI
+            rightSidebarOpen: true,
+            leftSidebarOpen: false 
         };
 
         this.init();
@@ -52,18 +54,32 @@ class SketchGrid {
 
     init() {
         this.cacheElements();
+        this.detectTheme();
         this.bindEvents();
         this.updateUIValues();
         this.render();
+    }
+
+    detectTheme() {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            this.state.theme = 'dark';
+            this.els.body.className = 'theme-dark';
+            document.getElementById('theme-icon-sun').classList.add('hidden');
+            document.getElementById('theme-icon-moon').classList.remove('hidden');
+        }
     }
 
     cacheElements() {
         this.els = {
             body: document.body,
             themeToggle: document.getElementById('theme-toggle'),
-            themeIconSun: document.getElementById('theme-icon-sun'),
-            themeIconMoon: document.getElementById('theme-icon-moon'),
-            orientationInputs: document.getElementsByName('orientation'),
+            headerOrientation: document.getElementsByName('orientation'),
+            headerDimension: document.getElementsByName('dimension'),
+            toggleRightBtn: document.getElementById('toggle-right-sidebar'),
+            rightSidebar: document.getElementById('right-sidebar'),
+            leftSidebar: document.getElementById('left-sidebar'),
+            closeRightBtn: document.getElementById('close-right-sidebar'),
+            // Left Controls
             boxCountInput: document.getElementById('box-count'),
             boxCountDisplay: document.getElementById('box-count-display'),
             ratioInputs: document.getElementsByName('ratio'),
@@ -72,15 +88,18 @@ class SketchGrid {
             ratioH: document.getElementById('ratio-h'),
             spacingInputs: document.getElementsByName('spacing'),
             marginSelect: document.getElementById('margin-preset'),
-            customMarginDiv: document.getElementById('custom-margin-input'),
-            customMarginInput: document.getElementById('margin-val'),
-            downloadBtn: document.getElementById('download-pdf'),
-            canvas: document.getElementById('grid-canvas'),
-            paperPreview: document.getElementById('paper-preview'),
-            pOrientation: document.getElementById('p-orientation'),
-            pRatio: document.getElementById('p-ratio'),
-            pCount: document.getElementById('p-count'),
-            // Stage 2
+            marginValInput: document.getElementById('margin-val'),
+            showPageNumbers: document.getElementById('show-page-numbers'),
+            pageNumSettings: document.getElementById('page-num-settings'),
+            showWatermark: document.getElementById('show-watermark'),
+            pageCount: document.getElementById('page-count'),
+            // Right Controls (Smart Engine)
+            reserveHeader: document.getElementById('reserve-header'),
+            reserveFooter: document.getElementById('reserve-footer'),
+            headerHeightInput: document.getElementById('header-height'),
+            headerHeightDisplay: document.getElementById('header-height-display'),
+            footerHeightInput: document.getElementById('footer-height'),
+            footerHeightDisplay: document.getElementById('footer-height-display'),
             docTitle: document.getElementById('doc-title'),
             docSubtitle: document.getElementById('doc-subtitle'),
             docAuthor: document.getElementById('doc-author'),
@@ -90,104 +109,114 @@ class SketchGrid {
             dateDetails: document.getElementById('date-details'),
             dateModeInputs: document.getElementsByName('date-mode'),
             customDateVal: document.getElementById('custom-date-val'),
-            metaPosition: document.getElementById('meta-position'),
-            showWatermark: document.getElementById('show-watermark'),
-            pageCount: document.getElementById('page-count')
+            dateFormat: document.getElementById('date-format'),
+            strokeColor: document.getElementById('stroke-color'),
+            strokeOpacity: document.getElementById('stroke-opacity'),
+            // Preview
+            canvas: document.getElementById('grid-canvas'),
+            paperPreview: document.getElementById('paper-preview'),
+            pOrientation: document.getElementById('p-orientation'),
+            pRatio: document.getElementById('p-ratio'),
+            pCount: document.getElementById('p-count'),
+            downloadBtn: document.getElementById('download-pdf'),
+            mobileToggleLeft: document.getElementById('mobile-toggle-left'),
+            mobileToggleRight: document.getElementById('mobile-toggle-right')
         };
         this.ctx = this.els.canvas.getContext('2d');
     }
 
     bindEvents() {
-        this.els.themeToggle.addEventListener('click', () => this.toggleTheme());
+        this.els.themeToggle.onclick = () => this.toggleTheme();
+        this.els.toggleRightBtn.onclick = () => this.toggleSidebar('right');
+        this.els.closeRightBtn.onclick = () => this.toggleSidebar('right', false);
+        this.els.mobileToggleLeft.onclick = () => this.toggleSidebar('left');
+        this.els.mobileToggleRight.onclick = () => this.toggleSidebar('right');
 
-        this.els.orientationInputs.forEach(input => {
-            input.addEventListener('change', (e) => this.updateState({ orientation: e.target.value }));
-        });
+        this.bindRadio('orientation', 'headerOrientation');
+        this.bindRadio('dimension', 'headerDimension');
 
-        this.els.boxCountInput.addEventListener('input', (e) => {
+        this.els.boxCountInput.oninput = (e) => {
             const val = parseInt(e.target.value);
             this.els.boxCountDisplay.textContent = val;
             this.updateState({ boxCount: val });
+        };
+        this.bindRadio('ratio', 'ratioInputs', (val) => {
+            this.els.customRatioInputs.classList.toggle('hidden', val !== 'custom');
         });
-
-        this.els.ratioInputs.forEach(input => {
-            input.addEventListener('change', (e) => {
-                const isCustom = e.target.value === 'custom';
-                this.els.customRatioInputs.classList.toggle('hidden', !isCustom);
-                this.updateState({ ratio: e.target.value });
-            });
+        [this.els.ratioW, this.els.ratioH].forEach(el => el.oninput = () => {
+            this.updateState({ customRatio: { w: parseFloat(this.els.ratioW.value)||1, h: parseFloat(this.els.ratioH.value)||1 } });
         });
-
-        [this.els.ratioW, this.els.ratioH].forEach(input => {
-            input.addEventListener('input', () => {
-                this.updateState({ 
-                    customRatio: { 
-                        w: parseFloat(this.els.ratioW.value) || 1, 
-                        h: parseFloat(this.els.ratioH.value) || 1 
-                    } 
-                });
-            });
-        });
-
-        this.els.spacingInputs.forEach(input => {
-            input.addEventListener('change', (e) => this.updateState({ spacing: e.target.value }));
-        });
-
-        this.els.marginSelect.addEventListener('change', (e) => {
+        this.bindRadio('spacing', 'spacingInputs');
+        this.els.marginSelect.onchange = (e) => {
             const isCustom = e.target.value === 'custom';
-            this.els.customMarginDiv.classList.toggle('hidden', !isCustom);
+            this.els.marginValInput.classList.toggle('hidden', !isCustom);
             this.updateState({ marginPreset: e.target.value });
-        });
+        };
+        this.els.marginValInput.oninput = (e) => this.updateState({ customMargin: parseFloat(e.target.value)||2 });
+        this.els.showPageNumbers.onchange = (e) => this.updateState({ showPageNumbers: e.target.checked });
+        this.els.showWatermark.onchange = (e) => this.updateState({ showWatermark: e.target.checked });
+        this.els.pageCount.oninput = (e) => this.updateState({ pageCount: parseInt(e.target.value)||1 });
+        this.els.downloadBtn.onclick = () => this.handleDownload();
 
-        this.els.customMarginInput.addEventListener('input', (e) => {
-            this.updateState({ customMargin: parseFloat(e.target.value) || 0 });
-        });
+        // Smart Engine
+        this.els.reserveHeader.onchange = (e) => this.updateState({ reserveHeader: e.target.checked });
+        this.els.reserveFooter.onchange = (e) => this.updateState({ reserveFooter: e.target.checked });
+        this.els.headerHeightInput.oninput = (e) => {
+            const val = parseInt(e.target.value);
+            this.els.headerHeightDisplay.textContent = `${val}mm`;
+            this.updateState({ headerHeight: val });
+        };
+        this.els.footerHeightInput.oninput = (e) => {
+            const val = parseInt(e.target.value);
+            this.els.footerHeightDisplay.textContent = `${val}mm`;
+            this.updateState({ footerHeight: val });
+        };
 
-        this.els.downloadBtn.addEventListener('click', async () => {
-            const originalText = this.els.downloadBtn.innerHTML;
-            this.els.downloadBtn.disabled = true;
-            this.els.downloadBtn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Generating...';
-            lucide.createIcons();
-
-            await new Promise(r => setTimeout(r, 800)); // Aesthetic delay
-
-            this.generatePDF();
-
-            this.els.downloadBtn.disabled = false;
-            this.els.downloadBtn.innerHTML = originalText;
-            lucide.createIcons();
-        });
-
-        // Stage 2 Bindings
-        this.els.docTitle.addEventListener('input', (e) => this.updateState({ title: e.target.value }));
-        this.els.docSubtitle.addEventListener('input', (e) => this.updateState({ subtitle: e.target.value }));
-        this.els.docAuthor.addEventListener('input', (e) => this.updateState({ author: e.target.value }));
-        this.els.showLabels.addEventListener('change', (e) => this.updateState({ showLabels: e.target.checked }));
-        this.els.showMetaBorder.addEventListener('change', (e) => this.updateState({ showMetaBorder: e.target.checked }));
-        this.els.showDate.addEventListener('change', (e) => {
+        this.els.docTitle.oninput = (e) => this.updateState({ title: e.target.value });
+        this.els.docSubtitle.oninput = (e) => this.updateState({ subtitle: e.target.value });
+        this.els.docAuthor.oninput = (e) => this.updateState({ author: e.target.value });
+        this.els.showLabels.onchange = (e) => this.updateState({ showLabels: e.target.checked });
+        this.els.showMetaBorder.onchange = (e) => this.updateState({ showMetaBorder: e.target.checked });
+        this.els.showDate.onchange = (e) => {
             this.els.dateDetails.classList.toggle('hidden', !e.target.checked);
             this.updateState({ showDate: e.target.checked });
+        };
+        this.bindRadio('dateMode', 'dateModeInputs', (val) => {
+            this.els.customDateVal.classList.toggle('hidden', val !== 'custom');
         });
-        this.els.dateModeInputs.forEach(input => {
-            input.addEventListener('change', (e) => {
-                const isCustom = e.target.value === 'custom';
-                this.els.customDateVal.classList.toggle('hidden', !isCustom);
-                this.updateState({ dateMode: e.target.value });
+        this.els.customDateVal.oninput = (e) => this.updateState({ customDate: e.target.value });
+        this.els.dateFormat.onchange = (e) => this.updateState({ dateFormat: e.target.value });
+        this.els.strokeColor.oninput = (e) => this.updateState({ strokeColor: e.target.value });
+        this.els.strokeOpacity.oninput = (e) => this.updateState({ strokeOpacity: parseFloat(e.target.value) });
+
+        window.onresize = () => this.render();
+    }
+
+    bindRadio(stateKey, elsKey, cb) {
+        this.els[elsKey].forEach(el => {
+            el.addEventListener('change', (e) => {
+                this.updateState({ [stateKey]: e.target.value });
+                if (cb) cb(e.target.value);
             });
         });
-        this.els.customDateVal.addEventListener('input', (e) => this.updateState({ customDate: e.target.value }));
-        this.els.metaPosition.addEventListener('change', (e) => this.updateState({ metaPosition: e.target.value }));
-        this.els.showWatermark.addEventListener('change', (e) => this.updateState({ showWatermark: e.target.checked }));
-        this.els.pageCount.addEventListener('input', (e) => this.updateState({ pageCount: parseInt(e.target.value) || 1 }));
+    }
 
-        window.addEventListener('resize', () => this.render());
+    toggleSidebar(side, force) {
+        if (side === 'right') {
+            this.state.rightSidebarOpen = force !== undefined ? force : !this.state.rightSidebarOpen;
+            this.els.rightSidebar.classList.toggle('closed', !this.state.rightSidebarOpen);
+            this.els.rightSidebar.classList.toggle('open', this.state.rightSidebarOpen);
+        } else {
+            this.state.leftSidebarOpen = force !== undefined ? force : !this.state.leftSidebarOpen;
+            this.els.leftSidebar.classList.toggle('open', this.state.leftSidebarOpen);
+        }
     }
 
     toggleTheme() {
         this.state.theme = this.state.theme === 'light' ? 'dark' : 'light';
         this.els.body.className = `theme-${this.state.theme}`;
-        this.els.themeIconSun.classList.toggle('hidden', this.state.theme === 'dark');
-        this.els.themeIconMoon.classList.toggle('hidden', this.state.theme === 'light');
+        document.getElementById('theme-icon-sun').classList.toggle('hidden', this.state.theme === 'dark');
+        document.getElementById('theme-icon-moon').classList.toggle('hidden', this.state.theme === 'light');
     }
 
     updateState(newState) {
@@ -198,46 +227,47 @@ class SketchGrid {
 
     updateUIValues() {
         this.els.pOrientation.textContent = this.state.orientation.charAt(0).toUpperCase() + this.state.orientation.slice(1);
-        this.els.pRatio.textContent = this.state.ratio === 'custom' 
-            ? `${this.state.customRatio.w}:${this.state.customRatio.h}` 
-            : this.state.ratio;
-        this.els.pCount.textContent = `${this.state.boxCount} Boxes`;
-
+        this.els.pRatio.textContent = this.state.dimension === '3d' ? 'Isometric' : 
+            (this.state.ratio === 'custom' ? `${this.state.customRatio.w}:${this.state.customRatio.h}` : this.state.ratio);
+        this.els.pCount.textContent = this.state.dimension === '3d' ? '3D Grid' : `${this.state.boxCount} Boxes`;
         this.els.paperPreview.className = `preview-paper ${this.state.orientation}`;
-    }
-
-    getMetadata() {
-        const date = this.state.showDate 
-            ? (this.state.dateMode === 'auto' ? new Date().toISOString().split('T')[0] : this.state.customDate)
-            : '';
-        
-        return {
-            title: this.state.title,
-            subtitle: this.state.subtitle,
-            author: this.state.author,
-            date: date,
-            labels: this.state.showLabels,
-            border: this.state.showMetaBorder,
-            position: this.state.metaPosition,
-            watermark: this.state.showWatermark
-        };
+        if (this.state.dimension === '3d') document.getElementById('2d-only').style.display = 'none';
+        else document.getElementById('2d-only').style.display = 'block';
     }
 
     getBoxRatio() {
-        if (this.state.ratio === 'custom') {
-            return this.state.customRatio.w / this.state.customRatio.h;
-        }
+        if (this.state.ratio === 'custom') return this.state.customRatio.w / this.state.customRatio.h;
         const [w, h] = this.state.ratio.split(':').map(Number);
         return w / h;
     }
 
     getMargin() {
-        if (this.state.marginPreset === 'custom') return this.state.customMargin;
-        return CONFIG.margins[this.state.marginPreset];
+        if (this.state.marginPreset === 'custom') return Math.max(2, this.state.customMargin);
+        return CONFIG.margins[this.state.marginPreset] || 2;
     }
 
-    getSpacing() {
-        return CONFIG.spacings[this.state.spacing];
+    getBoxingSpacing() {
+        return CONFIG.spacings[this.state.spacing] || 0;
+    }
+
+    getFormattedDate() {
+        if (this.state.dateMode === 'auto') {
+            const d = new Date();
+            const pad = (n) => n.toString().padStart(2, '0');
+            const day = pad(d.getDate()), month = pad(d.getMonth() + 1), year = d.getFullYear();
+            const shortYear = year.toString().slice(-2);
+            
+            switch (this.state.dateFormat) {
+                case 'DD-MM-YYYY': return `${day}-${month}-${year}`;
+                case 'MM-DD-YYYY': return `${month}-${day}-${year}`;
+                case 'YYYY-MM-DD': return `${year}-${month}-${day}`;
+                case 'DD/MM/YY': return `${day}/${month}/${shortYear}`;
+                default: return `${day}-${month}-${year}`;
+            }
+        } else {
+            // Return custom text directly, or placeholder if empty
+            return this.state.customDate || '[Enter Date]';
+        }
     }
 
     calculateLayout() {
@@ -246,53 +276,36 @@ class SketchGrid {
         const pageH = isPortrait ? CONFIG.A4.height : CONFIG.A4.width;
         
         const baseMargin = this.getMargin();
-        const spacing = this.getSpacing();
+        const hasHeader = this.state.reserveHeader || this.state.title || this.state.author;
+        const hasFooter = this.state.reserveFooter || this.state.showDate || this.state.showPageNumbers;
+
+        let marginTop = baseMargin + (hasHeader ? this.state.headerHeight : 0);
+        let marginBottom = baseMargin + (hasFooter ? this.state.footerHeight : 0);
+
+        const availableW = pageW - baseMargin * 2;
+        const availableH = pageH - marginTop - marginBottom;
+        const spacing = this.getBoxingSpacing();
+
+        if (this.state.dimension === '3d') {
+            return { type: '3d', w: availableW, h: availableH, offsets: { top: marginTop, left: baseMargin } };
+        }
+
         const N = this.state.boxCount;
         const boxRatio = this.getBoxRatio();
 
-        // Stage 2: Smart Margins
-        const meta = this.getMetadata();
-        const hasMeta = meta.title || meta.subtitle || meta.author || meta.date;
-        
-        let marginTop = baseMargin;
-        let marginBottom = baseMargin;
-        let marginLeft = baseMargin;
-        let marginRight = baseMargin;
-
-        const metaZoneHeight = 12; // 12mm extra for metadata
-
-        if (hasMeta) {
-            if (['topLeft', 'topCenter'].includes(meta.position)) marginTop += metaZoneHeight;
-            if (['bottomRight', 'footer'].includes(meta.position)) marginBottom += metaZoneHeight;
-        }
-
-        const availableW = pageW - marginLeft - marginRight;
-        const availableH = pageH - marginTop - marginBottom;
-
-        let best = { area: 0, rows: 1, cols: 1, w: 0, h: 0, offsets: { top: marginTop, left: marginLeft } };
-
+        let best = { area: 0, rows: 1, cols: 1, w: 0, h: 0, offsets: { top: marginTop, left: baseMargin } };
         for (let cols = 1; cols <= N; cols++) {
             const rows = Math.ceil(N / cols);
-            const maxW = (availableW - (cols - 1) * spacing) / cols;
-            const maxH = (availableH - (rows - 1) * spacing) / rows;
-
+            const maxW = (availableW - (cols-1)*spacing) / cols;
+            const maxH = (availableH - (rows-1)*spacing) / rows;
             let w, h;
-            if (boxRatio > maxW / maxH) {
-                w = maxW;
-                h = maxW / boxRatio;
-            } else {
-                h = maxH;
-                w = maxH * boxRatio;
-            }
-
+            if (boxRatio > maxW / maxH) { w = maxW; h = maxW / boxRatio; }
+            else { h = maxH; w = maxH * boxRatio; }
             if (w > 0 && h > 0) {
                 const totalArea = N * w * h;
-                if (totalArea > best.area) {
-                    best = { area: totalArea, rows, cols, w, h, offsets: { top: marginTop, left: marginLeft } };
-                }
+                if (totalArea > best.area) best = { area: totalArea, rows, cols, w, h, offsets: { top: marginTop, left: baseMargin } };
             }
         }
-
         return best;
     }
 
@@ -301,256 +314,226 @@ class SketchGrid {
         const isPortrait = this.state.orientation === 'portrait';
         const dpr = window.devicePixelRatio || 1;
         const rect = this.els.paperPreview.getBoundingClientRect();
-        
         this.els.canvas.width = rect.width * dpr;
         this.els.canvas.height = rect.height * dpr;
         this.ctx.scale(dpr, dpr);
 
-        const canvasW = rect.width;
-        const canvasH = rect.height;
+        const canvasW = rect.width, canvasH = rect.height;
         const mmToPx = canvasW / (isPortrait ? CONFIG.A4.width : CONFIG.A4.height);
-
         this.ctx.clearRect(0, 0, canvasW, canvasH);
+
+        if (this.state.showWatermark) this.drawWatermark(canvasW, canvasH, mmToPx);
+        this.drawBars(this.ctx, mmToPx, canvasW, canvasH, 1);
         
-        // Draw Watermark
-        const meta = this.getMetadata();
-        if (meta.watermark) {
-            this.ctx.save();
-            this.ctx.font = `600 ${10 * mmToPx}px Inter`;
-            this.ctx.fillStyle = 'rgba(0,0,0,0.05)';
-            this.ctx.textAlign = 'center';
-            this.ctx.translate(canvasW/2, canvasH/2);
-            this.ctx.rotate(-Math.PI / 4);
-            this.ctx.fillText('MADE WITH SKETCHGRID', 0, 0);
-            this.ctx.restore();
+        this.ctx.strokeStyle = this.state.strokeColor;
+        this.ctx.globalAlpha = this.state.strokeOpacity;
+        this.ctx.lineWidth = 1;
+
+        if (layout.type === '3d') this.drawIsometricGrid(layout, mmToPx);
+        else this.draw2DGrid(layout, mmToPx, canvasW, canvasH);
+        this.ctx.globalAlpha = 1;
+    }
+
+    drawBars(ctx, mmToPx, canvasW, canvasH, pageNum) {
+        const margin = this.getMargin() * mmToPx;
+        const isPortrait = this.state.orientation === 'portrait';
+        const pageH_px = (isPortrait ? CONFIG.A4.height : CONFIG.A4.width) * mmToPx;
+        
+        // Header
+        const hasHeader = this.state.reserveHeader || this.state.title || this.state.author;
+        if (hasHeader) {
+            const h_height = this.state.headerHeight * mmToPx;
+            const y = margin;
+            if (this.state.showMetaBorder) {
+                ctx.setLineDash([2,2]); ctx.strokeStyle = '#cbd5e1'; ctx.strokeRect(margin, y, canvasW - margin*2, h_height); ctx.setLineDash([]);
+            }
+            // Title (Left)
+            ctx.fillStyle = '#0f172a';
+            ctx.font = `bold ${5 * mmToPx}px Roboto`;
+            ctx.textAlign = 'left';
+            let titleText = this.state.title || '';
+            if (this.state.showLabels) titleText = `Title: ${titleText}`;
+            ctx.fillText(titleText.toUpperCase(), margin + 4*mmToPx, y + h_height/2 + 1*mmToPx);
+            
+            // Author (Right)
+            ctx.font = `italic ${4 * mmToPx}px Roboto`;
+            ctx.textAlign = 'right';
+            let authStr = this.state.author || '';
+            if (this.state.showLabels) {
+                ctx.font = `bold ${3.5 * mmToPx}px Roboto`;
+                ctx.fillText('Author:', canvasW - margin - ctx.measureText(authStr).width - 6*mmToPx, y + h_height/2 + 1*mmToPx);
+                ctx.font = `normal ${4 * mmToPx}px Roboto`;
+            }
+            ctx.fillText(authStr, canvasW - margin - 4*mmToPx, y + h_height/2 + 1*mmToPx);
         }
 
-        // Draw Metadata
-        this.renderMetadataOnCanvas(this.ctx, meta, mmToPx, canvasW, canvasH);
+        // Footer
+        const hasFooter = this.state.reserveFooter || this.state.showDate || this.state.showPageNumbers;
+        if (hasFooter) {
+            const f_height = this.state.footerHeight * mmToPx;
+            const y = pageH_px - margin - f_height;
+            if (this.state.showMetaBorder) {
+                ctx.setLineDash([2,2]); ctx.strokeStyle = '#cbd5e1'; ctx.strokeRect(margin, y, canvasW - margin*2, f_height); ctx.setLineDash([]);
+            }
+            // Date (Left)
+            if (this.state.showDate) {
+                ctx.fillStyle = '#475569';
+                ctx.textAlign = 'left';
+                let dateStr = this.getFormattedDate();
+                if (this.state.showLabels) {
+                    ctx.font = `bold ${3.5 * mmToPx}px Roboto`;
+                    ctx.fillText('Date:', margin + 4*mmToPx, y + f_height/2 + 1*mmToPx);
+                    ctx.font = `normal ${3.5 * mmToPx}px Roboto`;
+                    ctx.fillText(dateStr, margin + 4*mmToPx + ctx.measureText('Date: ').width + 2*mmToPx, y + f_height/2 + 1*mmToPx);
+                } else {
+                    ctx.font = `normal ${3.5 * mmToPx}px Roboto`;
+                    ctx.fillText(dateStr, margin + 4*mmToPx, y + f_height/2 + 1*mmToPx);
+                }
+            }
 
-        // Draw Grid
-        const boxW = layout.w * mmToPx;
-        const boxH = layout.h * mmToPx;
-        const spacing = this.getSpacing() * mmToPx;
-        
-        const totalGridW = layout.cols * boxW + (layout.cols - 1) * spacing;
-        const totalGridH = layout.rows * boxH + (layout.rows - 1) * spacing;
-        
-        // Horizontal centering remains same, but vertical depends on smart margins
-        const startX = (canvasW - totalGridW) / 2;
-        // The available area was between offsets.top and pageH - offset.bottom
-        const availableAreaH = canvasH - (layout.offsets.top + this.getMargin()) * mmToPx; // approx
-        // Actually, just center within the calculated free space
-        const marginTopPx = layout.offsets.top * mmToPx;
-        const marginBottomPx = (isPortrait ? CONFIG.A4.height : CONFIG.A4.width) * mmToPx - (layout.offsets.top * mmToPx + totalGridH);
-        
-        const startY = marginTopPx + ( (canvasH - (layout.offsets.top + this.getMargin()) * mmToPx) - totalGridH ) / 2;
-        // Simpler: center in the "Available Area" we calculated
-        const gridAreaH = canvasH - (layout.offsets.top + (this.state.orientation === 'portrait' ? CONFIG.A4.height : CONFIG.A4.width === 'portrait' ? 0 : 0)) * mmToPx;
-        // Just use the math from calculateLayout:
-        const finalStartY = layout.offsets.top * mmToPx + ( (canvasH - (layout.offsets.top + ( (isPortrait ? CONFIG.A4.height : CONFIG.A4.width) - (layout.offsets.top + (layout.rows*layout.h + (layout.rows-1)*this.getSpacing()) ) )) * mmToPx ) - totalGridH) / 2;
-        
-        // Refined vertical center in the adjusted zone:
-        const zoneH = ( (isPortrait ? CONFIG.A4.height : CONFIG.A4.width) - layout.offsets.top - (this.getMargin() + ( (['bottomRight', 'footer'].includes(meta.position)) ? 12 : 0)) ) * mmToPx;
-        const actualStartY = layout.offsets.top * mmToPx + (zoneH - totalGridH) / 2;
+            // Page Number (Right)
+            if (this.state.showPageNumbers) {
+                ctx.textAlign = 'right';
+                ctx.font = `bold 700 ${3.5 * mmToPx}px Roboto`;
+                ctx.fillText(`Page ${pageNum} of ${this.state.pageCount}`, canvasW - margin - 4*mmToPx, y + f_height/2 + 1*mmToPx);
+            }
+        }
+    }
 
-        this.ctx.strokeStyle = '#1e293b';
-        this.ctx.lineWidth = 1;
+    draw2DGrid(layout, mmToPx, canvasW, canvasH) {
+        const boxW = layout.w * mmToPx, boxH = layout.h * mmToPx, spacing = this.getBoxingSpacing() * mmToPx;
+        const totalW = layout.cols * boxW + (layout.cols - 1) * spacing;
+        const totalH = layout.rows * boxH + (layout.rows - 1) * spacing;
+        const startX = (canvasW - totalW) / 2;
+        const startY = layout.offsets.top * mmToPx + ( (layout.h * layout.rows + (layout.rows-1)*this.getBoxingSpacing())*mmToPx > (layout.h * layout.rows)*mmToPx ? 0 : 0); // Simplified
+        const actualStartY = layout.offsets.top * mmToPx + ( (layout.h * layout.rows + (layout.rows-1)*this.getBoxingSpacing())*mmToPx < (layout.h * layout.rows)*mmToPx ? 0 : 0);
+        
+        // Centering grid in the CUTOUT area
+        const availableZoneH = (layout.type === '3d' ? layout.h : layout.rows * layout.h + (layout.rows-1)*layout.spacing) ? 0 : 0; 
+        // Real logic: center between marginTop and (pageH - marginBottom)
+        const isPortrait = this.state.orientation === 'portrait';
+        const pageH_px = (isPortrait ? CONFIG.A4.height : CONFIG.A4.width) * mmToPx;
+        const gridAreaH = pageH_px - (layout.offsets.top * mmToPx) - ( (this.state.reserveFooter || this.state.showDate || this.state.showPageNumbers) ? (this.getMargin() + this.state.footerHeight)*mmToPx : this.getMargin()*mmToPx );
+        const finalY = layout.offsets.top * mmToPx + (gridAreaH - totalH) / 2;
 
         let count = 0;
         for (let r = 0; r < layout.rows; r++) {
             for (let c = 0; c < layout.cols; c++) {
-                if (count >= this.state.boxCount) break;
-                const x = startX + c * (boxW + spacing);
-                const y = actualStartY + r * (boxH + spacing);
-                this.ctx.strokeRect(x, y, boxW, boxH);
-                count++;
+                if (count++ >= this.state.boxCount) break;
+                this.ctx.strokeRect(startX+c*(boxW+spacing), finalY+r*(boxH+spacing), boxW, boxH);
             }
         }
     }
 
-    renderMetadataOnCanvas(ctx, meta, mmToPx, canvasW, canvasH) {
-        const hasText = meta.title || meta.subtitle || meta.author || meta.date;
-        if (!hasText) return;
-
-        ctx.save();
-        ctx.font = `${4 * mmToPx}px Roboto`;
-        ctx.fillStyle = '#334155';
-        
-        const padding = 2 * mmToPx;
-        const margin = this.getMargin() * mmToPx;
-        const lineHeight = 5 * mmToPx;
-        
-        let lines = [];
-        if (meta.title) lines.push((meta.labels ? 'TITLE: ' : '') + meta.title.toUpperCase());
-        if (meta.subtitle) lines.push(meta.subtitle);
-        if (meta.author) lines.push((meta.labels ? 'AUTHOR: ' : '') + meta.author);
-        if (meta.date) lines.push((meta.labels ? 'DATE: ' : '') + meta.date);
-
-        // Pre-calculate block width/height
-        const blockH = lines.length * lineHeight + padding * 2;
-        let blockW = 0;
-        lines.forEach(l => {
-            const metrics = ctx.measureText(l);
-            if (metrics.width > blockW) blockW = metrics.width;
-        });
-        blockW += padding * 2;
-
-        let x = margin, y = margin;
-
-        if (meta.position === 'topCenter') {
-            x = (canvasW - blockW) / 2;
-        } else if (meta.position === 'bottomRight') {
-            x = canvasW - margin - blockW;
-            y = canvasH - margin - blockH;
-        } else if (meta.position === 'footer') {
-            x = margin;
-            y = canvasH - margin - blockH;
-            blockW = canvasW - margin * 2;
+    drawIsometricGrid(layout, mmToPx) {
+        const startX = layout.offsets.left * mmToPx, startY = layout.offsets.top * mmToPx;
+        const gridW = layout.w * mmToPx, gridH = layout.h * mmToPx;
+        const cell = 10 * mmToPx;
+        this.ctx.beginPath();
+        for (let x = 0; x <= gridW; x += cell) { this.ctx.moveTo(startX + x, startY); this.ctx.lineTo(startX + x, startY + gridH); }
+        for (let y = 0; y <= gridH; y += cell) { this.ctx.moveTo(startX, startY + y); this.ctx.lineTo(startX + gridW, startY + y); }
+        for (let i = -gridW; i <= gridW + gridH; i += cell * 1.5) {
+            this.ctx.moveTo(startX, startY + i); this.ctx.lineTo(startX + gridW, startY + i + gridW * 0.5);
+            this.ctx.moveTo(startX, startY + i); this.ctx.lineTo(startX + gridW, startY + i - gridW * 0.5);
         }
+        this.ctx.stroke();
+    }
 
-        if (meta.border) {
-            ctx.strokeStyle = '#cbd5e1';
-            ctx.setLineDash([2, 2]);
-            ctx.strokeRect(x, y, blockW, blockH);
-            ctx.setLineDash([]);
-        }
+    drawWatermark(canvasW, canvasH, mmToPx) {
+        this.ctx.save();
+        this.ctx.font = `800 ${10 * mmToPx}px Outfit`;
+        this.ctx.fillStyle = 'rgba(0,0,0,0.05)';
+        this.ctx.textAlign = 'center';
+        this.ctx.translate(canvasW/2, canvasH/2);
+        this.ctx.rotate(-Math.PI / 4);
+        this.ctx.fillText('MADE WITH SKETCHGRID', 0, 0);
+        this.ctx.restore();
+    }
 
-        ctx.textAlign = (meta.position === 'topCenter') ? 'center' : 'left';
-        const textX = (meta.position === 'topCenter') ? x + blockW / 2 : x + padding;
-
-        lines.forEach((line, i) => {
-            const isTitle = i === 0 && meta.title;
-            if (isTitle) ctx.font = `bold ${4.5 * mmToPx}px Roboto`;
-            else ctx.font = `${3.5 * mmToPx}px Roboto`;
-            
-            ctx.fillText(line, textX, y + padding + lineHeight * (i + 0.8));
-        });
-
-        ctx.restore();
+    async handleDownload() {
+        const btn = this.els.downloadBtn;
+        const original = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Exporting...';
+        lucide.createIcons();
+        await new Promise(r => setTimeout(r, 600));
+        this.generatePDF();
+        btn.disabled = false;
+        btn.innerHTML = original;
+        lucide.createIcons();
     }
 
     generatePDF() {
         const layout = this.calculateLayout();
-        const isPortrait = this.state.orientation === 'portrait';
-        const pageOrientation = isPortrait ? 'p' : 'l';
+        const doc = new jsPDF({ orientation: this.state.orientation==='portrait'?'p':'l', unit: 'mm', format: 'a4' });
+        const pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
         
-        const doc = new jsPDF({
-            orientation: pageOrientation,
-            unit: 'mm',
-            format: 'a4'
-        });
-
-        const pageW = isPortrait ? CONFIG.A4.width : CONFIG.A4.height;
-        const pageH = isPortrait ? CONFIG.A4.height : CONFIG.A4.width;
-        
-        const boxW = layout.w;
-        const boxH = layout.h;
-        const spacing = this.getSpacing();
-        const meta = this.getMetadata();
-
         for (let p = 0; p < this.state.pageCount; p++) {
             if (p > 0) doc.addPage();
-
-            // 1. Watermark
-            if (meta.watermark) {
-                doc.saveGraphicsState();
-                doc.setGState(new doc.GState({ opacity: 0.05 }));
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(24);
-                doc.setTextColor(0, 0, 0);
-                doc.text('MADE WITH SKETCHGRID', pageW / 2, pageH / 2, {
-                    align: 'center',
-                    angle: 45
-                });
+            if (this.state.showWatermark) {
+                doc.saveGraphicsState(); doc.setGState(new doc.GState({ opacity: 0.05 }));
+                doc.setFont('helvetica', 'bold'); doc.setFontSize(30);
+                doc.text('MADE WITH SKETCHGRID', pageW/2, pageH/2, { align:'center', angle:45 });
                 doc.restoreGraphicsState();
             }
-
-            // 2. Metadata
-            this.renderMetadataOnPDF(doc, meta, pageW, pageH);
-
-            // 3. Grid
-            const totalGridW = layout.cols * boxW + (layout.cols - 1) * spacing;
-            const totalGridH = layout.rows * boxH + (layout.rows - 1) * spacing;
-            
-            const startX = (pageW - totalGridW) / 2;
-            const zoneH = (pageH - layout.offsets.top - (this.getMargin() + ( (['bottomRight', 'footer'].includes(meta.position)) ? 12 : 0)) );
-            const startY = layout.offsets.top + (zoneH - totalGridH) / 2;
-
-            doc.setLineWidth(0.1);
-            doc.setDrawColor(0, 0, 0);
-
-            let count = 0;
-            for (let r = 0; r < layout.rows; r++) {
-                for (let c = 0; c < layout.cols; c++) {
-                    if (count >= this.state.boxCount) break;
-                    const x = startX + c * (boxW + spacing);
-                    const y = startY + r * (boxH + spacing);
-                    doc.rect(x, y, boxW, boxH);
-                    count++;
-                }
-            }
+            this.renderPDFBars(doc, pageW, pageH, p+1);
+            doc.setDrawColor(this.state.strokeColor); doc.setGState(new doc.GState({ opacity: this.state.strokeOpacity })); doc.setLineWidth(0.1);
+            if (this.state.dimension === '3d') this.drawPDFIsometric(doc, layout);
+            else this.drawPDF2D(doc, layout, pageW, pageH);
         }
-
-        const filename = `SketchGrid_${this.state.title || 'Guides'}_${this.state.boxCount}x.pdf`;
-        doc.save(filename);
+        doc.save(`SketchGrid_${this.state.title||'Export'}.pdf`);
     }
 
-    renderMetadataOnPDF(doc, meta, pageW, pageH) {
-        const hasText = meta.title || meta.subtitle || meta.author || meta.date;
-        if (!hasText) return;
-
+    renderPDFBars(doc, pageW, pageH, pageNum) {
         const margin = this.getMargin();
-        const padding = 2;
-        const lineHeight = 4;
-        
-        let lines = [];
-        if (meta.title) lines.push((meta.labels ? 'TITLE: ' : '') + meta.title.toUpperCase());
-        if (meta.subtitle) lines.push(meta.subtitle);
-        if (meta.author) lines.push((meta.labels ? 'AUTHOR: ' : '') + meta.author);
-        if (meta.date) lines.push((meta.labels ? 'DATE: ' : '') + meta.date);
-
-        const blockH = lines.length * lineHeight + padding * 2;
-        let maxTextW = 0;
-        doc.setFont('Roboto', 'normal');
-        doc.setFontSize(8);
-        lines.forEach(l => {
-            const w = doc.getTextWidth(l);
-            if (w > maxTextW) maxTextW = w;
-        });
-        const blockW = (meta.position === 'footer') ? (pageW - margin * 2) : (maxTextW + padding * 2);
-
-        let x = margin, y = margin;
-        if (meta.position === 'topCenter') x = (pageW - blockW) / 2;
-        else if (meta.position === 'bottomRight') {
-            x = pageW - margin - blockW;
-            y = pageH - margin - blockH;
-        } else if (meta.position === 'footer') {
-            y = pageH - margin - blockH;
+        const hasHeader = this.state.reserveHeader || this.state.title || this.state.author;
+        if (hasHeader) {
+            const h_h = this.state.headerHeight;
+            if (this.state.showMetaBorder) doc.setLineDash([1,1], 0); doc.rect(margin, margin, pageW - margin*2, h_h); doc.setLineDash([], 0);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+            let t = this.state.title || ''; if (this.state.showLabels) t = `Title: ${t}`;
+            doc.text(t.toUpperCase(), margin + 2, margin + h_h/2 + 2);
+            doc.setFontSize(10);
+            let a = this.state.author || ''; if (this.state.showLabels) a = `Author: ${a}`;
+            doc.text(a, pageW - margin - 2, margin + h_h/2 + 2, { align: 'right' });
         }
-
-        if (meta.border) {
-            doc.setLineWidth(0.1);
-            doc.setDrawColor(200, 200, 200);
-            doc.setLineDash([1, 1]);
-            doc.rect(x, y, blockW, blockH);
-            doc.setLineDash([]);
+        const hasFooter = this.state.reserveFooter || this.state.showDate || this.state.showPageNumbers;
+        if (hasFooter) {
+            const f_h = this.state.footerHeight;
+            const y = pageH - margin - f_h;
+            if (this.state.showMetaBorder) doc.setLineDash([1,1], 0); doc.rect(margin, y, pageW - margin*2, f_h); doc.setLineDash([], 0);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+            doc.text(this.getFormattedDate(), margin + 2, y + f_h/2 + 2);
+            if (this.state.showPageNumbers) doc.text(`Page ${pageNum} of ${this.state.pageCount}`, pageW - margin - 2, y + f_h/2 + 2, { align: 'right' });
         }
+    }
 
-        const textX = (meta.position === 'topCenter') ? (pageW / 2) : (x + padding);
-        const align = (meta.position === 'topCenter') ? 'center' : 'left';
+    drawPDF2D(doc, layout, pageW, pageH) {
+        const spacing = this.getBoxingSpacing();
+        const totalW = layout.cols * layout.w + (layout.cols - 1) * spacing;
+        const totalH = layout.rows * layout.h + (layout.rows - 1) * spacing;
+        const startX = (pageW - totalW) / 2;
+        const footerSpace = (this.state.reserveFooter || this.state.showDate || this.state.showPageNumbers) ? (this.getMargin() + this.state.footerHeight) : this.getMargin();
+        const gridAreaH = pageH - layout.offsets.top - footerSpace;
+        const startY = layout.offsets.top + (gridAreaH - totalH) / 2;
+        let count = 0;
+        for (let r = 0; r < layout.rows; r++) {
+            for (let c = 0; c < layout.cols; c++) {
+                if (count++ >= this.state.boxCount) break;
+                doc.rect(startX+c*(layout.w+spacing), startY+r*(layout.h+spacing), layout.w, layout.h);
+            }
+        }
+    }
 
-        doc.setTextColor(60, 60, 60);
-        lines.forEach((line, i) => {
-            const isTitle = i === 0 && meta.title;
-            doc.setFont('Roboto', isTitle ? 'bold' : 'normal');
-            doc.setFontSize(isTitle ? 10 : 8);
-            doc.text(line, textX, y + padding + lineHeight * (i + 0.8), { align });
-        });
+    drawPDFIsometric(doc, layout) {
+        const startX = layout.offsets.left, startY = layout.offsets.top, gridW = layout.w, gridH = layout.h, cell = 10;
+        for (let x = 0; x <= gridW; x += cell) doc.line(startX + x, startY, startX + x, startY + gridH);
+        for (let y = 0; y <= gridH; y += cell) doc.line(startX, startY + y, startX + gridW, startY + y);
+        for (let i = -gridW; i <= gridW + gridH; i += cell * 1.5) {
+            doc.line(startX, startY + i, startX + gridW, startY + i + gridW * 0.5);
+            doc.line(startX, startY + i, startX + gridW, startY + i - gridW * 0.5);
+        }
     }
 }
 
-// Spark up the app
-window.addEventListener('DOMContentLoaded', () => {
-    window.app = new SketchGrid();
-});
+window.addEventListener('DOMContentLoaded', () => { window.app = new SketchGrid(); });
