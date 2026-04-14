@@ -1,25 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SketchGrid - Professional Drawing Workspace</title>
-    <meta name="description" content="Professional workspace for generating drawing guides. 2D grids, 3D isometric guides, and document metadata.">
+    <title>DraftGrid </title>
+    <meta name="description"
+        content="Website for generating drawing guides. 2D grids, 3D grid guides, and document metadata.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&family=Roboto:wght@400;500;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body class="theme-light">
     <!-- Header: Mode & Orientation -->
     <header class="app-header">
         <div class="header-left">
             <div class="logo">
                 <i data-lucide="grid-3x3" class="logo-icon"></i>
-                <h1>SketchGrid</h1>
+                <h1>DraftGrid</h1>
             </div>
         </div>
         <div class="header-center">
@@ -30,7 +35,7 @@
                 </label>
                 <label class="mode-btn">
                     <input type="radio" name="dimension" value="3d">
-                    <span>3D Engine</span>
+                    <span>3D Grid</span>
                 </label>
             </div>
             <div class="orientation-toggle">
@@ -51,7 +56,7 @@
             </button>
             <button id="toggle-right-sidebar" class="primary-icon-button" title="Global Settings">
                 <i data-lucide="settings-2"></i>
-                <span>Settings</span>
+                <span>Personalise</span>
             </button>
         </div>
     </header>
@@ -60,17 +65,21 @@
         <!-- Left Sidebar: Construction Tools (Mode Specific) -->
         <aside class="sidebar left-sidebar" id="left-sidebar">
             <div class="sidebar-scroll">
-                
+
                 <!-- 2D SPECIFIC SIDEBAR -->
                 <div id="ui-2d-only">
                     <section class="sidebar-section">
                         <div class="section-title"><i data-lucide="zap"></i> 2D Presets</div>
                         <div class="section-content">
                             <div class="preset-grid">
-                                <button class="preset-card" data-preset="ideation"><i data-lucide="lightbulb"></i><span>Ideation</span></button>
-                                <button class="preset-card" data-preset="thumbnails"><i data-lucide="grid-3x3"></i><span>Thumbnails</span></button>
-                                <button class="preset-card" data-preset="hero"><i data-lucide="image"></i><span>Hero</span></button>
-                                <button class="preset-card" data-preset="storyboard"><i data-lucide="film"></i><span>Story</span></button>
+                                <button class="preset-card" data-preset="ideation"><i
+                                        data-lucide="lightbulb"></i><span>Ideation</span></button>
+                                <button class="preset-card" data-preset="thumbnails"><i
+                                        data-lucide="grid-3x3"></i><span>Thumbnails</span></button>
+                                <button class="preset-card" data-preset="hero"><i
+                                        data-lucide="image"></i><span>Hero</span></button>
+                                <button class="preset-card" data-preset="storyboard"><i
+                                        data-lucide="film"></i><span>Story</span></button>
                             </div>
                         </div>
                     </section>
@@ -87,24 +96,33 @@
                             <div class="control-group">
                                 <h4>2D Primitives</h4>
                                 <div class="radio-group-grid">
-                                    <label class="radio-item"><input type="radio" name="prime-2d" value="rect" checked><span>Rect</span></label>
-                                    <label class="radio-item"><input type="radio" name="prime-2d" value="circle"><span>Circle</span></label>
-                                    <label class="radio-item"><input type="radio" name="prime-2d" value="triangle"><span>Tri</span></label>
+                                    <label class="radio-item"><input type="radio" name="prime-2d" value="rect"
+                                            checked><span>Rectangle</span></label>
+                                    <label class="radio-item"><input type="radio" name="prime-2d"
+                                            value="circle"><span>Circle</span></label>
+                                    <label class="radio-item"><input type="radio" name="prime-2d"
+                                            value="triangle"><span>Triangle</span></label>
                                 </div>
                             </div>
                             <div class="control-group">
                                 <h4>Aspect Ratio</h4>
                                 <div class="radio-group-grid">
-                                    <label class="radio-item"><input type="radio" name="ratio" value="1:1" checked><span>1:1</span></label>
-                                    <label class="radio-item"><input type="radio" name="ratio" value="2:3"><span>2:3</span></label>
-                                    <label class="radio-item"><input type="radio" name="ratio" value="3:4"><span>3:4</span></label>
-                                    <label class="radio-item"><input type="radio" name="ratio" value="custom"><span>Custom</span></label>
+                                    <label class="radio-item"><input type="radio" name="ratio" value="1:1"
+                                            checked><span>1:1</span></label>
+                                    <label class="radio-item"><input type="radio" name="ratio"
+                                            value="2:3"><span>2:3</span></label>
+                                    <label class="radio-item"><input type="radio" name="ratio"
+                                            value="3:4"><span>3:4</span></label>
+                                    <label class="radio-item"><input type="radio" name="ratio"
+                                            value="custom"><span>Custom</span></label>
                                 </div>
                                 <div id="custom-ratio-inputs" class="hidden mt-2">
                                     <div class="input-row">
-                                        <input type="number" id="ratio-w" value="16" step="0.1" class="text-input mini" style="width:65px">
+                                        <input type="number" id="ratio-w" value="16" step="0.1" class="text-input mini"
+                                            style="width:65px">
                                         <span>:</span>
-                                        <input type="number" id="ratio-h" value="9" step="0.1" class="text-input mini" style="width:65px">
+                                        <input type="number" id="ratio-h" value="9" step="0.1" class="text-input mini"
+                                            style="width:65px">
                                     </div>
                                 </div>
                             </div>
@@ -118,15 +136,19 @@
                         <div class="section-title"><i data-lucide="zap"></i> 3D Presets</div>
                         <div class="section-content">
                             <div class="preset-grid">
-                                <button class="preset-card" data-preset="study-box"><i data-lucide="box"></i><span>Box Study</span></button>
-                                <button class="preset-card" data-preset="hero-sphere"><i data-lucide="circle"></i><span>Sphere</span></button>
-                                <button class="preset-card" data-preset="product-cyl"><i data-lucide="database"></i><span>Cylinder</span></button>
-                                <button class="preset-card" data-preset="complex-3d"><i data-lucide="layers"></i><span>Complex</span></button>
+                                <button class="preset-card" data-preset="study-box"><i data-lucide="box"></i><span>Box
+                                        Study</span></button>
+                                <button class="preset-card" data-preset="hero-sphere"><i
+                                        data-lucide="circle"></i><span>Sphere</span></button>
+                                <button class="preset-card" data-preset="product-cyl"><i
+                                        data-lucide="database"></i><span>Cylinder</span></button>
+                                <button class="preset-card" data-preset="complex-3d"><i
+                                        data-lucide="layers"></i><span>Complex</span></button>
                             </div>
                         </div>
                     </section>
                     <details class="sidebar-section" open>
-                        <summary><i data-lucide="box"></i> Geometry Engine (3D)</summary>
+                        <summary><i data-lucide="box"></i> 3D Geometry Engine</summary>
                         <div class="section-content">
                             <div class="control-group">
                                 <h4>Object Quantity</h4>
@@ -138,9 +160,12 @@
                             <div class="control-group">
                                 <h4>Base Primitive</h4>
                                 <div class="radio-group-grid">
-                                    <label class="radio-item"><input type="radio" name="shape" value="cube" checked><span>Cuboid</span></label>
-                                    <label class="radio-item"><input type="radio" name="shape" value="sphere"><span>Sphere</span></label>
-                                    <label class="radio-item"><input type="radio" name="shape" value="cylinder"><span>Cyl/Cone</span></label>
+                                    <label class="radio-item"><input type="radio" name="shape" value="cube"
+                                            checked><span>Cuboid</span></label>
+                                    <label class="radio-item"><input type="radio" name="shape"
+                                            value="sphere"><span>Sphere</span></label>
+                                    <label class="radio-item"><input type="radio" name="shape"
+                                            value="cylinder"><span>Cyl/Cone</span></label>
                                 </div>
                             </div>
                             <div class="control-group" id="measurements">
@@ -148,50 +173,61 @@
                                 <div id="m-cuboid">
                                     <div class="input-row mb-2">
                                         <label class="font-tiny" style="width: 50px;">Length</label>
-                                        <input type="number" id="dim-l" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                        <input type="number" id="dim-l" min="0.1" max="25" step="0.1" value="1.0"
+                                            class="text-input mini" style="flex:1">
                                     </div>
                                     <div class="input-row mb-2">
                                         <label class="font-tiny" style="width: 50px;">Breadth</label>
-                                        <input type="number" id="dim-b" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                        <input type="number" id="dim-b" min="0.1" max="25" step="0.1" value="1.0"
+                                            class="text-input mini" style="flex:1">
                                     </div>
                                     <div class="input-row">
                                         <label class="font-tiny" style="width: 50px;">Height</label>
-                                        <input type="number" id="dim-h" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                        <input type="number" id="dim-h" min="0.1" max="25" step="0.1" value="1.0"
+                                            class="text-input mini" style="flex:1">
                                     </div>
                                 </div>
                                 <div id="m-sphere" class="hidden">
                                     <div class="input-row mb-2">
                                         <label class="font-tiny" style="width: 50px;">Radius X</label>
-                                        <input type="number" id="dim-rx" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                        <input type="number" id="dim-rx" min="0.1" max="25" step="0.1" value="1.0"
+                                            class="text-input mini" style="flex:1">
                                     </div>
                                     <div class="input-row mb-2">
                                         <label class="font-tiny" style="width: 50px;">Radius Y</label>
-                                        <input type="number" id="dim-ry" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                        <input type="number" id="dim-ry" min="0.1" max="25" step="0.1" value="1.0"
+                                            class="text-input mini" style="flex:1">
                                     </div>
                                     <div class="input-row">
                                         <label class="font-tiny" style="width: 50px;">Radius Z</label>
-                                        <input type="number" id="dim-rz" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                        <input type="number" id="dim-rz" min="0.1" max="25" step="0.1" value="1.0"
+                                            class="text-input mini" style="flex:1">
                                     </div>
                                 </div>
                                 <div id="m-cylinder" class="hidden">
                                     <div class="input-row mb-2">
                                         <label class="font-tiny" style="width: 50px;">Top Rad</label>
-                                        <input type="number" id="dim-rt" min="0" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                        <input type="number" id="dim-rt" min="0" max="25" step="0.1" value="1.0"
+                                            class="text-input mini" style="flex:1">
                                     </div>
                                     <div class="input-row mb-2">
                                         <label class="font-tiny" style="width: 50px;">Bot Rad</label>
-                                        <input type="number" id="dim-rbot" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                        <input type="number" id="dim-rbot" min="0.1" max="25" step="0.1" value="1.0"
+                                            class="text-input mini" style="flex:1">
                                     </div>
                                     <div class="input-row">
                                         <label class="font-tiny" style="width: 50px;">Height</label>
-                                        <input type="number" id="dim-ch" min="0.1" max="25" step="0.1" value="1.0" class="text-input mini" style="flex:1">
+                                        <input type="number" id="dim-ch" min="0.1" max="25" step="0.1" value="1.0"
+                                            class="text-input mini" style="flex:1">
                                     </div>
                                 </div>
                             </div>
                             <div class="control-group no-border">
-                                <div class="label-row"><label>Global Scale</label><span id="shape-depth-val">100%</span></div>
+                                <div class="label-row"><label>Global Scale</label><span id="shape-depth-val">100%</span>
+                                </div>
                                 <input type="range" id="shape-depth" min="10" max="300" value="100" class="mb-2">
-                                <div class="label-row"><label>Inline Density</label><span id="inline-density-val">5</span></div>
+                                <div class="label-row"><label>Inline Density</label><span
+                                        id="inline-density-val">5</span></div>
                                 <input type="range" id="inline-density" min="0" max="10" value="5">
                             </div>
                         </div>
@@ -200,15 +236,20 @@
                         <summary><i data-lucide="video"></i> View Orientation</summary>
                         <div class="section-content">
                             <div class="control-group no-border">
-                                <div class="label-row"><label>Rotation X</label><button class="reset-mini" data-reset="rotX">0°</button></div>
+                                <div class="label-row"><label>Rotation X</label><button class="reset-mini"
+                                        data-reset="rotX">0°</button></div>
                                 <input type="range" id="shape-rot-x" min="-180" max="180" value="0" class="mb-2">
-                                <div class="label-row"><label>Rotation Y</label><button class="reset-mini" data-reset="rotY">0°</button></div>
+                                <div class="label-row"><label>Rotation Y</label><button class="reset-mini"
+                                        data-reset="rotY">0°</button></div>
                                 <input type="range" id="shape-rot-y" min="-180" max="180" value="0" class="mb-2">
-                                <div class="label-row"><label>Rotation Z</label><button class="reset-mini" data-reset="rotZ">0°</button></div>
+                                <div class="label-row"><label>Rotation Z</label><button class="reset-mini"
+                                        data-reset="rotZ">0°</button></div>
                                 <input type="range" id="shape-rot-z" min="-180" max="180" value="0" class="mb-2">
                                 <div class="checkbox-row">
-                                    <label class="checkbox-item"><input type="checkbox" id="three-d-xray"><span>X-Ray</span></label>
-                                    <label class="checkbox-item"><input type="checkbox" id="three-d-grid"><span>Inline Grid</span></label>
+                                    <label class="checkbox-item"><input type="checkbox"
+                                            id="three-d-xray"><span>X-Ray</span></label>
+                                    <label class="checkbox-item"><input type="checkbox" id="three-d-grid"><span>Inline
+                                            Grid</span></label>
                                 </div>
                             </div>
                         </div>
@@ -216,7 +257,7 @@
                 </div>
             </div>
             <div class="sidebar-footer">
-                <button id="download-pdf" class="primary-button"><i data-lucide="download"></i> Export PDF</button>
+                <button id="download-pdf" class="primary-button"><i data-lucide="download"></i> Download PDF</button>
             </div>
         </aside>
 
@@ -227,7 +268,8 @@
                     <canvas id="grid-canvas"></canvas>
                 </div>
                 <div class="preview-info">
-                    <span id="p-orientation">Portrait</span> · <span id="p-ratio">1:1</span> · <span id="p-count">6 Boxes</span>
+                    <span id="p-orientation">Portrait</span> · <span id="p-ratio">1:1</span> · <span id="p-count">6
+                        Boxes</span>
                 </div>
             </div>
         </main>
@@ -252,9 +294,36 @@
                         <div class="control-group no-border">
                             <h4>Gutter Spacing</h4>
                             <div class="radio-group-grid" id="spacing-group">
-                                <label class="radio-item"><input type="radio" name="spacing" value="small"><span>Small</span></label>
-                                <label class="radio-item"><input type="radio" name="spacing" value="medium" checked><span>Med</span></label>
-                                <label class="radio-item"><input type="radio" name="spacing" value="large"><span>Large</span></label>
+                                <label class="radio-item"><input type="radio" name="spacing"
+                                        value="small"><span>Small</span></label>
+                                <label class="radio-item"><input type="radio" name="spacing" value="medium"
+                                        checked><span>Med</span></label>
+                                <label class="radio-item"><input type="radio" name="spacing"
+                                        value="large"><span>Large</span></label>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="sidebar-section" open>
+                    <summary><i data-lucide="align-vertical-space-around"></i> Page Structure</summary>
+                    <div class="section-content">
+                        <div class="control-group">
+                            <label class="checkbox-item mb-2"><input type="checkbox" id="reserve-header"><span>Reserve
+                                    Header</span></label>
+                            <div class="input-row">
+                                <input type="range" id="header-height" min="10" max="50" value="15" style="flex:1">
+                                <span class="font-tiny" id="header-height-display"
+                                    style="width: 40px; text-align:right;">15mm</span>
+                            </div>
+                        </div>
+                        <div class="control-group no-border">
+                            <label class="checkbox-item mb-2"><input type="checkbox" id="reserve-footer"><span>Reserve
+                                    Footer</span></label>
+                            <div class="input-row">
+                                <input type="range" id="footer-height" min="10" max="50" value="15" style="flex:1">
+                                <span class="font-tiny" id="footer-height-display"
+                                    style="width: 40px; text-align:right;">15mm</span>
                             </div>
                         </div>
                     </div>
@@ -265,12 +334,15 @@
                     <div class="section-content">
                         <div class="control-group">
                             <input type="text" id="doc-title" placeholder="Project Title" class="text-input mb-2">
-                            <input type="text" id="doc-subtitle" placeholder="Subtitle / Version" class="text-input mb-2">
+                            <input type="text" id="doc-subtitle" placeholder="Subtitle / Version"
+                                class="text-input mb-2">
                             <input type="text" id="doc-author" placeholder="Author Name" class="text-input">
                         </div>
                         <div class="checkbox-row mt-2">
-                            <label class="checkbox-item"><input type="checkbox" id="show-labels" checked><span>Labels</span></label>
-                            <label class="checkbox-item"><input type="checkbox" id="show-meta-border"><span>Borders</span></label>
+                            <label class="checkbox-item"><input type="checkbox" id="show-labels"
+                                    checked><span>Labels</span></label>
+                            <label class="checkbox-item"><input type="checkbox"
+                                    id="show-meta-border"><span>Borders</span></label>
                         </div>
                     </div>
                 </details>
@@ -278,17 +350,24 @@
                 <details class="sidebar-section">
                     <summary><i data-lucide="calendar"></i> Date & Output</summary>
                     <div class="section-content">
-                        <label class="checkbox-item mb-2"><input type="checkbox" id="show-date" checked><span>Include Date</span></label>
+                        <label class="checkbox-item mb-2"><input type="checkbox" id="show-date" checked><span>Include
+                                Date</span></label>
                         <div id="date-details">
                             <div class="radio-group-compact mb-2">
-                                <label class="radio-item-mini"><input type="radio" name="date-mode" value="auto" checked><span>Today</span></label>
-                                <label class="radio-item-mini"><input type="radio" name="date-mode" value="custom"><span>Custom</span></label>
+                                <label class="radio-item-mini"><input type="radio" name="date-mode" value="auto"
+                                        checked><span>Today</span></label>
+                                <label class="radio-item-mini"><input type="radio" name="date-mode"
+                                        value="custom"><span>Custom</span></label>
                             </div>
-                            <input type="text" id="custom-date-val" placeholder="Custom Date" class="text-input mb-2 hidden">
+                            <input type="text" id="custom-date-val" placeholder="Custom Date"
+                                class="text-input mb-2 hidden">
                         </div>
-                        <label class="checkbox-item mb-2"><input type="checkbox" id="show-page-numbers" checked><span>Page Numbers</span></label>
-                        <label class="checkbox-item mb-2"><input type="checkbox" id="show-watermark" checked><span>Watermark</span></label>
-                        <div class="input-wrapper"><label class="font-tiny">Sheet Count</label><input type="number" id="page-count" value="1" min="1" max="25" class="text-input"></div>
+                        <label class="checkbox-item mb-2"><input type="checkbox" id="show-page-numbers"
+                                checked><span>Page Numbers</span></label>
+                        <label class="checkbox-item mb-2"><input type="checkbox" id="show-watermark"
+                                checked><span>Watermark</span></label>
+                        <div class="input-wrapper"><label class="font-tiny">Sheet Count</label><input type="number"
+                                id="page-count" value="1" min="1" max="25" class="text-input"></div>
                     </div>
                 </details>
 
@@ -298,7 +377,8 @@
                         <div class="control-group no-border">
                             <div class="input-row" style="display:flex; align-items:center; gap:10px">
                                 <input type="color" id="stroke-color" value="#1e293b" class="color-picker">
-                                <input type="range" id="stroke-opacity" min="0.1" max="1" step="0.1" value="1" style="flex:1">
+                                <input type="range" id="stroke-opacity" min="0.1" max="1" step="0.1" value="1"
+                                    style="flex:1">
                             </div>
                         </div>
                     </div>
@@ -313,10 +393,12 @@
     <!-- Mobile Navigation -->
     <nav class="mobile-nav">
         <button id="mobile-toggle-left" class="mobile-fab" title="Tools"><i data-lucide="pen-tool"></i></button>
-        <button id="mobile-toggle-right" class="mobile-fab accent" title="Settings"><i data-lucide="sliders"></i></button>
+        <button id="mobile-toggle-right" class="mobile-fab accent" title="Personalise"><i
+                data-lucide="sliders"></i></button>
     </nav>
 
     <script src="app.js"></script>
     <script>lucide.createIcons();</script>
 </body>
+
 </html>

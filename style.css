@@ -343,7 +343,8 @@ body {
     text-transform: uppercase;
 }
 
-.label-row span, .reset-mini {
+.label-row span,
+.reset-mini {
     font-size: 0.7rem;
     font-weight: 700;
     color: var(--accent);

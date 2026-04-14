@@ -1,4 +1,4 @@
-class SketchGrid {
+class DraftGrid {
     constructor() {
         this.state = {
             orientation: 'portrait',
@@ -371,11 +371,12 @@ class SketchGrid {
         let canvasH = orientation === 'portrait' ? paperH : paperW;
 
         const margin = this.getMargin();
+        const pagePadding = 5; // Fixed padding for structural elements independent of grid margin
         const headerH = (this.state.reserveHeader || this.state.title || this.state.author) ? this.state.headerHeight : 0;
         const footerH = (this.state.reserveFooter || this.state.showDate || this.state.showPageNumbers) ? this.state.footerHeight : 0;
 
-        const usableW = canvasW - (margin * 2);
-        const usableH = canvasH - (margin * 2) - headerH - footerH;
+        const usableW = canvasW - (margin * 2) - (pagePadding * 2);
+        const usableH = canvasH - (margin * 2) - (pagePadding * 2) - headerH - footerH;
 
         let ratio = 1;
         if (this.state.dimension === '2d') {
@@ -388,7 +389,8 @@ class SketchGrid {
         const count = this.state.boxCount;
         let cols = 1, rows = 1;
 
-        if (count === 2) { cols = 1; rows = 2; }
+        if (count <= 1) { cols = 1; rows = 1; }
+        else if (count === 2) { cols = 1; rows = 2; }
         else if (count === 3) { cols = 1; rows = 3; }
         else if (count === 4) { cols = 2; rows = 2; }
         else if (count <= 6) { cols = 2; rows = 3; }
@@ -404,8 +406,8 @@ class SketchGrid {
 
         let boxW = maxBoxW;
         let boxH = maxBoxH;
-        let startX = margin;
-        let startY = margin + headerH;
+        let startX = pagePadding + margin;
+        let startY = pagePadding + margin + headerH;
 
         if (this.state.dimension === '2d') {
             if (maxBoxW / ratio <= maxBoxH) {
@@ -415,11 +417,11 @@ class SketchGrid {
             }
             let actualW = boxW * cols + spacingPx * (cols - 1);
             let actualH = boxH * rows + spacingPx * (rows - 1);
-            startX = margin + (usableW - actualW) / 2;
-            startY = margin + headerH + (usableH - actualH) / 2;
+            startX = pagePadding + margin + (usableW - actualW) / 2;
+            startY = pagePadding + margin + headerH + (usableH - actualH) / 2;
         }
 
-        return { canvasW, canvasH, boxW, boxH, cols, rows, margin, startX, startY, spacingPx };
+        return { canvasW, canvasH, boxW, boxH, cols, rows, margin, startX, startY, spacingPx, pagePadding, headerH, footerH };
     }
 
     getMargin() {
@@ -620,49 +622,56 @@ class SketchGrid {
         ctx.strokeStyle = this.state.strokeColor;
         ctx.fillStyle = this.state.strokeColor;
 
+        const pad = L.pagePadding;
+        const width = L.canvasW - pad * 2;
+
         // Header
         const hasHeader = this.state.reserveHeader || this.state.title || this.state.author;
         if (hasHeader) {
-            const h = this.state.headerHeight;
-            if (this.state.showMetaBorder) ctx.strokeRect(L.margin, L.margin, L.canvasW - L.margin * 2, h);
-            
+            const h = L.headerH || this.state.headerHeight;
+            if (this.state.showMetaBorder) ctx.strokeRect(pad, pad, width, h);
+
             ctx.textAlign = "left";
-            ctx.font = "bold 3px Outfit";
-            let t = this.state.title || "SKETCHGRID"; 
+            const titleSize = Math.max(2, h * 0.25);
+            ctx.font = `bold ${titleSize}px Outfit`;
+            let t = this.state.title || " ";
             if (this.state.showLabels) t = `TITLE: ${t}`;
-            ctx.fillText(t.toUpperCase(), L.margin + 2, L.margin + h / 2 + 1);
-            
-            ctx.font = "1.5px Inter";
-            let sub = this.state.subtitle || ""; 
-            if (sub) ctx.fillText(sub.toUpperCase(), L.margin + 2, L.margin + h / 2 + 3.5);
+            ctx.fillText(t.toUpperCase(), pad + 2, pad + h / 2 + (titleSize / 3));
+
+            const subSize = Math.max(1.5, h * 0.15);
+            ctx.font = `${subSize}px Inter`;
+            let sub = this.state.subtitle || "";
+            if (sub) ctx.fillText(sub.toUpperCase(), pad + 2, pad + h - (subSize / 2));
 
             ctx.textAlign = "right";
-            ctx.font = "2px Inter";
-            let a = this.state.author || "ANONYMOUS"; 
-            if (this.state.showLabels) a = `AUTHOR: ${a}`;
-            ctx.fillText(a.toUpperCase(), L.canvasW - L.margin - 2, L.margin + h / 2 + 1);
+            const authSize = Math.max(1.5, h * 0.15);
+            ctx.font = `${authSize}px Inter`;
+            let a = this.state.author || "";
+            if (this.state.showLabels && a) a = `AUTHOR: ${a}`;
+            if (a) ctx.fillText(a.toUpperCase(), L.canvasW - pad - 2, pad + h / 2 + (authSize / 3));
         }
 
         // Footer
         const hasFooter = this.state.reserveFooter || this.state.showDate || this.state.showPageNumbers;
         if (hasFooter) {
-            const h = this.state.footerHeight;
-            const fy = L.canvasH - L.margin - h;
-            if (this.state.showMetaBorder) ctx.strokeRect(L.margin, fy, L.canvasW - L.margin * 2, h);
-            
-            ctx.font = "2px Inter";
-            
+            const h = L.footerH || this.state.footerHeight;
+            const fy = L.canvasH - pad - h;
+            if (this.state.showMetaBorder) ctx.strokeRect(pad, fy, width, h);
+
+            const footSize = Math.max(1.5, h * 0.2);
+            ctx.font = `${footSize}px Inter`;
+
             if (this.state.showDate) {
                 ctx.textAlign = "left";
                 let d = this.getFormattedDate();
                 if (this.state.showLabels) d = `DATE: ${d}`;
-                ctx.fillText(d.toUpperCase(), L.margin + 2, fy + h / 2 + 0.5);
+                ctx.fillText(d.toUpperCase(), pad + 2, fy + h / 2 + (footSize / 3));
             }
-            
+
             if (this.state.showPageNumbers) {
                 ctx.textAlign = "right";
-                let p = L.pageNum ? `PAGE ${L.pageNum}` : `PAGE 1 OF ${this.state.pageCount}`; 
-                ctx.fillText(p, L.canvasW - L.margin - 2, fy + h / 2 + 0.5);
+                let p = L.pageNum ? `PAGE ${L.pageNum}` : `PAGE 1 OF ${this.state.pageCount}`;
+                ctx.fillText(p, L.canvasW - pad - 2, fy + h / 2 + (footSize / 3));
             }
         }
 
@@ -675,7 +684,7 @@ class SketchGrid {
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.font = "bold 24px Outfit";
-            ctx.fillText("SKETCHGRID", 0, 0);
+            ctx.fillText("Made with DraftGrid", 0, 0);
             ctx.restore();
         }
     }
@@ -690,31 +699,54 @@ class SketchGrid {
         return `${day}-${month}-${year}`;
     }
 
-    handleDownload() {
+    async handleDownload() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF(this.state.orientation, 'mm', 'a4');
         const pageW = doc.internal.pageSize.getWidth();
         const pageH = doc.internal.pageSize.getHeight();
 
-        for (let p = 0; p < this.state.pageCount; p++) {
-            if (p > 0) doc.addPage();
-            const layout = this.calculateLayout();
-            const wrapper = {
-                strokeStyle: '#000', lineWidth: 0.1, globalAlpha: 1,
-                beginPath: () => doc.setDrawColor(0),
-                moveTo: (x, y) => { },
-                lineTo: (x, y) => doc.line(px_x, px_y, x, y), // Simple proxy logic
-                stroke: () => { },
-                strokeRect: (x, y, w, h) => doc.rect(x, y, w, h),
-                arc: (x, y, r, sa, ea) => doc.ellipse(x, y, r, r),
-                setLineDash: (arr) => doc.setLineDash(arr, 0)
-            };
-            // For production, we'd use a real bridge, but for MVP we use canvas capture:
-            const dataUrl = this.els.canvas.toDataURL('image/png');
-            doc.addImage(dataUrl, 'PNG', 0, 0, pageW, pageH);
+        const oldActive = this.state.activePreset;
+        this.updateState({ activePreset: null });
+
+        let pagesCount = this.state.pageCount;
+        if (this.state.dimension === '2d' &&
+            ['thumb-grid', 'storyboard'].includes(this.state.activePreset)) {
+            pagesCount = 1;
         }
-        doc.save(`SketchGrid_${this.state.title || 'Export'}.pdf`);
+
+        // Generate a 4x High-Resolution Canvas for exactly-crisp scaled PDFs
+        const exportScale = 4;
+        const layout = this.calculateLayout();
+        const mmToPx = 3.7795275591 * exportScale;
+
+        const exportCanvas = document.createElement('canvas');
+        exportCanvas.width = layout.canvasW * mmToPx;
+        exportCanvas.height = layout.canvasH * mmToPx;
+        const ctx = exportCanvas.getContext('2d');
+
+        for (let i = 1; i <= pagesCount; i++) {
+            if (i > 1) doc.addPage();
+
+            ctx.clearRect(0, 0, exportCanvas.width, exportCanvas.height);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+            ctx.save();
+            ctx.scale(mmToPx, mmToPx);
+
+            layout.pageNum = i;
+            this.drawGrid(ctx, layout, mmToPx);
+            this.drawBars(ctx, layout);
+
+            ctx.restore();
+
+            const dataUrl = exportCanvas.toDataURL('image/png', 1.0);
+            const imgW = layout.canvasW === 210 ? 210 : 297;
+            const imgH = layout.canvasH === 297 ? 297 : 210;
+            doc.addImage(dataUrl, 'PNG', 0, 0, imgW, imgH, undefined, 'FAST');
+        }
+        doc.save(`DraftGrid_${this.state.title || 'Export'}.pdf`);
     }
 }
 
-window.addEventListener('DOMContentLoaded', () => { window.app = new SketchGrid(); });
+window.addEventListener('DOMContentLoaded', () => { window.app = new DraftGrid(); });
