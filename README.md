@@ -8,7 +8,7 @@ It helps you create structured 2D and 3D sketch layouts instantly, ready to expo
 
 ## ✨ Live Tool
 
-👉 [https://yourusername.github.io/draftgrid](https://gamingradar.github.io/draftgrid/)
+👉 [https://gamingradar.github.io/draftgrid](https://gamingradar.github.io/draftgrid/)
 
 ---
 
@@ -25,27 +25,27 @@ DraftGrid solves that by letting you generate:
 
 ---
 
-## 🚀 Features
+## Features
 
-### 📐 2D Guides
+### 2D Guides
 - Adjustable grid (2–12 boxes)
 - Aspect ratios (1:1, 2:3, 3:4, custom)
 - Margins & spacing control
 - Portrait / Landscape A4
 
-### 🧊 3D Guides
+### 3D Guides
 - Basic shapes (cube, cuboid, cylinder, etc.)
 - Isometric / perspective layouts
 - Depth & angle control
 - Ideal for product sketching
 
-### 🧾 Professional Sheet Layout
+### Professional Sheet Layout
 - Title, version, author
 - Date & page numbering
 - Multi-page export
 - Optional logo support
 
-### 🎨 Customization
+### Customization
 - Stroke color & weight
 - Dotted / solid guides
 - Layout presets
@@ -85,5 +85,29 @@ This helps others discover the tool.
 This project uses privacy-friendly analytics via Cloudflare to understand usage and improve the tool.
 
 No personal data is collected.
+
+---
+
+## Contributing
+
+Suggestions, ideas, and improvements are welcome.
+
+You can:
+
+* Open an issue
+* Submit a pull request
+* Share feedback via email
+
+---
+
+## 📬 Contact
+
+Feel free to reach out on [Devashish Tambade](https://www.linkedin.com/in/devashishtambade/) with feedback, ideas, or if you build something using DraftGrid.
+
+---
+
+## License
+
+This project is licensed under the AGPL v3 License.
 
 ---
