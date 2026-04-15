@@ -87,10 +87,10 @@ body {
     gap: 10px;
 }
 
-.logo-icon {
-    color: var(--accent);
-    width: 28px;
-    height: 28px;
+.logo-img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
 }
 
 .logo h1 {
@@ -298,7 +298,13 @@ body {
     color: var(--accent);
 }
 
-/* UI Elements */
+.sidebar-footer {
+    padding: 24px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: center;
+    background: var(--bg-sidebar);
+}
 .control-group h4 {
     font-size: 0.725rem;
     color: var(--text-muted);
@@ -532,18 +538,32 @@ body {
 
 /* Buttons */
 .primary-button {
-    width: 100%;
-    padding: 14px;
+    width: auto;
+    min-width: 200px;
+    padding: 12px 24px;
     background: var(--accent);
     color: white;
     border: none;
     border-radius: 12px;
     font-weight: 700;
+    font-size: 0.9rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
+    box-shadow: 0 4px 14px var(--accent-soft);
+    transition: all 0.2s ease;
+}
+
+.primary-button:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--accent-soft);
+}
+
+.primary-button:active {
+    transform: translateY(0);
 }
 
 .primary-icon-button {
@@ -665,4 +685,49 @@ body {
     font-size: 0.7rem;
     color: var(--text-muted);
     text-transform: uppercase;
+}
+
+.helper-text {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.4;
+    margin-top: 4px;
+}
+
+.sidebar-branding {
+    padding: 24px;
+    text-align: center;
+    border-top: 1px solid var(--border-color);
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.sidebar-branding:hover {
+    opacity: 1;
+}
+
+.sidebar-branding p {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.kla-logo {
+    max-width: 120px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.kla-link {
+    display: inline-block;
+    transition: transform 0.2s;
+}
+
+.kla-link:hover {
+    transform: scale(1.05);
 }

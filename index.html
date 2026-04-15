@@ -4,9 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DraftGrid </title>
+    <title>DraftGrid: Printable Sketch Layout Tool</title>
     <meta name="description"
-        content="Website for generating drawing guides. 2D grids, 3D grid guides, and document metadata.">
+        content="Free printable drawing guides for 2D grids and 3D primitives. Tailor-made for storyboarding, ideation, and industrial design.">
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="DraftGrid: Printable Sketch Layout Tool">
+    <meta property="og:description"
+        content="Create custom printable drawing guides for 2D and 3D grids. Perfect for designers and artists.">
+    <meta property="og:image" content="assets/logo/draftgrid-logo.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/Icons/favicon.png">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -15,6 +26,7 @@
     <link rel="stylesheet" href="style.css">
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Cloudflare Web Analytics -->
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js'
@@ -26,7 +38,7 @@
     <header class="app-header">
         <div class="header-left">
             <div class="logo">
-                <i data-lucide="grid-3x3" class="logo-icon"></i>
+                <img src="assets/logo/draftgrid-logo.png" alt="DraftGrid Logo" class="logo-img">
                 <h1>DraftGrid</h1>
             </div>
         </div>
@@ -367,15 +379,30 @@
                         </div>
                         <label class="checkbox-item mb-2"><input type="checkbox" id="show-page-numbers"
                                 checked><span>Page Numbers</span></label>
-                        <label class="checkbox-item mb-2"><input type="checkbox" id="show-watermark"
-                                checked><span>Watermark</span></label>
                         <div class="input-wrapper"><label class="font-tiny">Sheet Count</label><input type="number"
                                 id="page-count" value="1" min="1" max="25" class="text-input"></div>
                     </div>
                 </details>
 
                 <details class="sidebar-section">
-                    <summary><i data-lucide="palette"></i> Grid Aesthetics</summary>
+                    <summary><i data-lucide="share-2"></i> Credits & Sharing</summary>
+                    <div class="section-content">
+                        <label class="checkbox-item mb-2">
+                            <input type="checkbox" id="show-watermark" checked>
+                            <span>Include Watermark</span>
+                        </label>
+                        <label class="checkbox-item mb-2">
+                            <input type="checkbox" id="include-qr" checked>
+                            <span>Include QR Code</span>
+                        </label>
+                        <p class="helper-text">
+                            If DraftGrid helps your workflow, consider keeping credit or using #DraftGrid when sharing.
+                        </p>
+                    </div>
+                </details>
+
+                <details class="sidebar-section">
+                    <summary><i data-lucide="palette"></i> Stroke colour & opacity</summary>
                     <div class="section-content">
                         <div class="control-group no-border">
                             <div class="input-row" style="display:flex; align-items:center; gap:10px">
@@ -389,6 +416,12 @@
             </div>
             <div class="close-drawer-mobile">
                 <button id="close-right-sidebar" class="secondary-button">Done</button>
+            </div>
+            <div class="sidebar-branding">
+                <p>Created by</p>
+                <a href="mailto:interactives@kla.com" class="kla-link">
+                    <img src="assets/logo/kla-logo.png" alt="Kla Interactives Logo" class="kla-logo">
+                </a>
             </div>
         </aside>
     </div>

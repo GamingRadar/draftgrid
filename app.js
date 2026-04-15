@@ -1,3 +1,5 @@
+const SITE_URL = "https://gamingradar.github.io/draftgrid/"; // Swappable branding link
+
 class DraftGrid {
     constructor() {
         this.state = {
@@ -28,6 +30,7 @@ class DraftGrid {
             dateFormat: 'DD-MM-YYYY',
             showPageNumbers: true,
             showWatermark: true,
+            includeQRCode: true,
             pageCount: 1,
             activePreset: null,
             // 3D Engine
@@ -142,6 +145,7 @@ class DraftGrid {
             dateDetails: document.getElementById('date-details'),
             showPageNumbers: document.getElementById('show-page-numbers'),
             showWatermark: document.getElementById('show-watermark'),
+            includeQRCode: document.getElementById('include-qr'),
             pageCount: document.getElementById('page-count'),
             downloadBtn: document.getElementById('download-pdf'),
             strokeColor: document.getElementById('stroke-color'),
@@ -226,6 +230,7 @@ class DraftGrid {
         safeBind(this.els.customDateVal, 'oninput', (e) => this.updateState({ customDate: e.target.value }));
         safeBind(this.els.showPageNumbers, 'onchange', (e) => this.updateState({ showPageNumbers: e.target.checked }));
         safeBind(this.els.showWatermark, 'onchange', (e) => this.updateState({ showWatermark: e.target.checked }));
+        safeBind(this.els.includeQRCode, 'onchange', (e) => this.updateState({ includeQRCode: e.target.checked }));
         safeBind(this.els.pageCount, 'oninput', (e) => this.updateState({ pageCount: parseInt(e.target.value) || 1 }));
         safeBind(this.els.strokeColor, 'oninput', (e) => this.updateState({ strokeColor: e.target.value }));
         safeBind(this.els.strokeOpacity, 'oninput', (e) => this.updateState({ strokeOpacity: parseFloat(e.target.value) }));
@@ -330,6 +335,8 @@ class DraftGrid {
         if (this.els.customDateVal) { this.els.customDateVal.classList.toggle('hidden', this.state.dateMode !== 'custom'); }
         if (this.els.headerHeightDisplay) { this.els.headerHeightDisplay.textContent = `${this.state.headerHeight}mm`; }
         if (this.els.footerHeightDisplay) { this.els.footerHeightDisplay.textContent = `${this.state.footerHeight}mm`; }
+        if (this.els.showWatermark) { this.els.showWatermark.checked = this.state.showWatermark; }
+        if (this.els.includeQRCode) { this.els.includeQRCode.checked = this.state.includeQRCode; }
     }
 
     applyPreset(id) {
@@ -686,6 +693,42 @@ class DraftGrid {
             ctx.font = "bold 24px Outfit";
             ctx.fillText("Made with DraftGrid", 0, 0);
             ctx.restore();
+        }
+
+        // Dynamic QR Code Rendering (Centered)
+        if (this.state.includeQRCode && typeof qrcode !== 'undefined') {
+            const qrSize = Math.max(10, L.footerH * 0.7); // Dynamically sized with footer
+            const qrx = (L.canvasW / 2) - (qrSize / 2); // Perfectly centered
+            const qry = L.canvasH - L.pagePadding - L.footerH + (L.footerH - qrSize) / 2;
+
+            this.renderQRCode(ctx, qrx, qry, qrSize, SITE_URL);
+        }
+    }
+
+    renderQRCode(ctx, x, y, size, data) {
+        try {
+            const qr = qrcode(0, 'M');
+            qr.addData(data);
+            qr.make();
+
+            const moduleCount = qr.getModuleCount();
+            const cellSize = size / moduleCount;
+
+            ctx.save();
+            ctx.fillStyle = this.state.strokeColor;
+            ctx.globalAlpha = 1.0; // Keep QR code fully opaque, ignoring stroke opacity
+
+            for (let row = 0; row < moduleCount; row++) {
+                for (let col = 0; col < moduleCount; col++) {
+                    if (qr.isDark(row, col)) {
+                        // Use a tiny bit of overlap to avoid seams
+                        ctx.fillRect(x + col * cellSize, y + row * cellSize, cellSize + 0.02, cellSize + 0.02);
+                    }
+                }
+            }
+            ctx.restore();
+        } catch (e) {
+            console.error("QR Generation failed:", e);
         }
     }
 
