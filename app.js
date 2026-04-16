@@ -743,6 +743,22 @@ class DraftGrid {
     }
 
     async handleDownload() {
+        // Track Events
+        if (typeof gtag === 'function') {
+            gtag('event', 'download_pdf', {
+                event_category: 'usage',
+                event_label: this.state.title || 'DraftGrid Export'
+            });
+
+            gtag('event', this.state.showWatermark ? 'watermark_enabled' : 'watermark_disabled', {
+                event_category: 'usage'
+            });
+
+            gtag('event', this.state.includeQRCode ? 'qr_enabled' : 'qr_disabled', {
+                event_category: 'usage'
+            });
+        }
+
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF(this.state.orientation, 'mm', 'a4');
         const pageW = doc.internal.pageSize.getWidth();
