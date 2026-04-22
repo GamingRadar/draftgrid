@@ -56,18 +56,19 @@ class DraftGrid {
             preserveCase: false,
             customSpacing: 5,
             zoomLevel: 0.6, // Increased default preview size
-            isTemplateLocked: false
+            isTemplateLocked: false,
+            templateMode: 'full' // 'full', 'partial', 'strict'
         };
 
         this.TEMPLATE_KEYS = [
-            'orientation', 'dimension', 'boxCount', 'ratio', 'customRatio', 
-            'spacing', 'customSpacing', 'marginPreset', 'customMargin', 
-            'strokeColor', 'strokeOpacity', 'reserveHeader', 'reserveFooter', 
-            'headerHeight', 'footerHeight', 'showLabels', 'showMetaBorder', 
-            'showWatermark', 'includeQRCode', 'prime2D', 'scale2D', 'shapeType', 
-            'projectionMode', 'isXray', 'showInlineGrid', 'shapeDepth', 
-            'inlineDensity', 'rotX', 'rotY', 'rotZ', 'dimL', 'dimB', 'dimH', 
-            'dimRX', 'dimRY', 'dimRZ', 'dimRT', 'dimRBot', 'dimCH', 
+            'orientation', 'dimension', 'boxCount', 'ratio', 'customRatio',
+            'spacing', 'customSpacing', 'marginPreset', 'customMargin',
+            'strokeColor', 'strokeOpacity', 'reserveHeader', 'reserveFooter',
+            'headerHeight', 'footerHeight', 'showLabels', 'showMetaBorder',
+            'showWatermark', 'includeQRCode', 'prime2D', 'scale2D', 'shapeType',
+            'projectionMode', 'isXray', 'showInlineGrid', 'shapeDepth',
+            'inlineDensity', 'rotX', 'rotY', 'rotZ', 'dimL', 'dimB', 'dimH',
+            'dimRX', 'dimRY', 'dimRZ', 'dimRT', 'dimRBot', 'dimCH',
             'title', 'author', 'subtitle'
         ];
 
@@ -191,7 +192,13 @@ class DraftGrid {
             btnEditTemplateLeft: document.getElementById('btn-edit-template-left'),
             btnEditTemplateRight: document.getElementById('btn-edit-template-right'),
             leftLockOverlay: document.getElementById('left-lock-overlay'),
-            rightLockOverlay: document.getElementById('right-lock-overlay')
+            rightLockOverlay: document.getElementById('right-lock-overlay'),
+            headerLockOverlay: document.getElementById('header-lock-overlay'),
+
+            // Export Modal
+            exportModal: document.getElementById('export-modal'),
+            btnCloseExportModal: document.getElementById('btn-close-export-modal'),
+            exportOptions: document.querySelectorAll('.export-option-btn')
         };
         this.ctx = this.els.canvas.getContext('2d');
     }
@@ -283,6 +290,16 @@ class DraftGrid {
         safeBind(this.els.templateFileInput, 'onchange', (e) => this.handleImportTemplate(e));
         [this.els.btnEditTemplateLeft, this.els.btnEditTemplateRight].forEach(btn => {
             safeBind(btn, 'onclick', () => this.updateState({ isTemplateLocked: false }));
+        });
+
+        // Export Modal Bindings
+        safeBind(this.els.btnCloseExportModal, 'onclick', () => this.setModalVisible(false));
+        this.els.exportOptions.forEach(btn => {
+            btn.onclick = () => {
+                const mode = btn.getAttribute('data-mode');
+                this.submitExport(mode);
+                this.setModalVisible(false);
+            };
         });
 
         window.onresize = () => this.render();
@@ -395,24 +412,56 @@ class DraftGrid {
 
         // Template Lock Overlays
         const isLocked = this.state.isTemplateLocked;
+        const isStrict = this.state.templateMode === 'strict';
+
         this.els.leftLockOverlay.classList.toggle('visible', isLocked);
         this.els.rightLockOverlay.classList.toggle('visible', isLocked);
+        this.els.headerLockOverlay.classList.toggle('visible', isLocked);
+
+        // Manage Unlock Buttons
+        [this.els.btnEditTemplateLeft, this.els.btnEditTemplateRight].forEach(btn => {
+            if (btn) btn.style.display = isStrict ? 'none' : 'flex';
+        });
+
+        // Hide Export button if locked (prevention)
+        if (this.els.btnExportTemplate) {
+            this.els.btnExportTemplate.style.display = isLocked ? 'none' : 'flex';
+        }
+    }
+
+    setModalVisible(visible) {
+        if (this.els.exportModal) {
+            this.els.exportModal.classList.toggle('visible', visible);
+        }
     }
 
     handleExportTemplate() {
-        const templateData = {};
+        this.setModalVisible(true);
+    }
+
+    submitExport(mode) {
+        const templateData = {
+            dgSignature: "DG-SECURED-V1",
+            exportTimestamp: new Date().toISOString(),
+            lockMode: mode
+        };
+
         this.TEMPLATE_KEYS.forEach(key => {
             if (this.state[key] !== undefined) {
                 templateData[key] = this.state[key];
             }
         });
 
-        const blob = new Blob([JSON.stringify(templateData, null, 2)], { type: 'application/json' });
+        // Secure slightly via Base64 obfuscation
+        const jsonStr = JSON.stringify(templateData);
+        const securedData = btoa(unescape(encodeURIComponent(jsonStr)));
+
+        const blob = new Blob([securedData], { type: 'application/octet-stream' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         const timestamp = new Date().toISOString().slice(0, 10);
-        a.download = `DraftGrid-Template-${this.state.title || 'Untitled'}-${timestamp}.json`;
+        a.download = `DraftGrid-${mode}-${this.state.title || 'Template'}-${timestamp}.dg`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -426,16 +475,34 @@ class DraftGrid {
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
-                const data = JSON.parse(e.target.result);
-                // Merge imported data into state and lock
-                this.updateState({ ...data, isTemplateLocked: true, activePreset: null });
+                let rawContent = e.target.result;
+                let data;
+
+                // Detect if it's our secured format or legacy JSON
+                if (rawContent.trim().startsWith('{')) {
+                    data = JSON.parse(rawContent);
+                } else {
+                    // Try decoding secured format
+                    const decoded = decodeURIComponent(escape(atob(rawContent)));
+                    data = JSON.parse(decoded);
+                }
+
+                const mode = data.lockMode || 'full';
+                const isLocked = (mode !== 'full');
+
+                // Merge imported data into state
+                this.updateState({
+                    ...data,
+                    templateMode: mode,
+                    isTemplateLocked: isLocked,
+                    activePreset: null
+                });
             } catch (err) {
                 console.error("Failed to parse template:", err);
-                alert("Invalid template file format.");
+                alert("Invalid or corrupted template file.");
             }
         };
         reader.readAsText(file);
-        // Reset input for same-file re-uploads
         event.target.value = '';
     }
 

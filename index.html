@@ -53,6 +53,7 @@
         </div>
         <div class="header-center">
             <div class="dimension-toggle">
+                <div id="header-lock-overlay" class="lock-overlay"></div>
                 <label class="mode-btn">
                     <input type="radio" name="dimension" value="2d" checked>
                     <span>2D Grid</span>
@@ -88,15 +89,15 @@
     <div class="app-main">
         <!-- Left Sidebar: Construction Tools (Mode Specific) -->
         <aside class="sidebar left-sidebar" id="left-sidebar">
-            <div id="left-lock-overlay" class="lock-overlay">
-                <div class="lock-overlay-content">
-                    <i data-lucide="lock" style="width: 24px; height: 24px; color: var(--accent);"></i>
-                    <p>Design Locked</p>
-                    <button id="btn-edit-template-left" class="primary-icon-button w-full"
-                        style="justify-content: center;">Edit Template</button>
-                </div>
-            </div>
             <div class="sidebar-scroll">
+                <div id="left-lock-overlay" class="lock-overlay">
+                    <div class="lock-overlay-content">
+                        <i data-lucide="lock" style="width: 24px; height: 24px; color: var(--accent);"></i>
+                        <p>Design Locked</p>
+                        <button id="btn-edit-template-left" class="primary-icon-button w-full"
+                            style="justify-content: center;">Edit Template</button>
+                    </div>
+                </div>
 
                 <!-- 2D SPECIFIC SIDEBAR -->
                 <div id="ui-2d-only">
@@ -112,7 +113,7 @@
                                         data-lucide="image"></i><span>Hero</span></button>
                                 <button class="preset-card" id="btn-import-template"><i
                                         data-lucide="upload-cloud"></i><span>Import</span></button>
-                                <input type="file" id="template-file-input" accept=".json" class="hidden">
+                                <input type="file" id="template-file-input" accept=".dg,.json" class="hidden">
                             </div>
                         </div>
                     </section>
@@ -492,6 +493,36 @@
         <button id="mobile-toggle-right" class="mobile-fab accent" title="Personalise"><i
                 data-lucide="sliders"></i></button>
     </nav>
+
+    <div id="export-modal" class="modal-overlay">
+        <div class="modal-card">
+            <h2>Template Security</h2>
+            <div class="export-option-grid">
+                <button class="export-option-btn" data-mode="full">
+                    <i data-lucide="unlock"></i>
+                    <div>
+                        <h3>Fully Editable</h3>
+                        <p>Users can change everything immediately.</p>
+                    </div>
+                </button>
+                <button class="export-option-btn" data-mode="partial">
+                    <i data-lucide="lock"></i>
+                    <div>
+                        <h3>Partially Editable</h3>
+                        <p>Design is locked but users can click "Edit" to modify.</p>
+                    </div>
+                </button>
+                <button class="export-option-btn" data-mode="strict">
+                    <i data-lucide="shield-alert"></i>
+                    <div>
+                        <h3>Strictly Locked</h3>
+                        <p>Design is permanently locked. No "Edit" button.</p>
+                    </div>
+                </button>
+            </div>
+            <button class="modal-close-btn" id="btn-close-export-modal">Cancel</button>
+        </div>
+    </div>
 
     <script src="triangleEngine.js"></script>
     <script src="app.js"></script>

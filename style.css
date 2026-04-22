@@ -183,6 +183,7 @@ body {
     flex: 1;
     overflow-y: auto;
     scrollbar-width: thin;
+    position: relative; /* Contain lock overlays within scroll area */
 }
 
 .right-sidebar {
@@ -777,6 +778,15 @@ body {
     visibility: visible;
 }
 
+/* Header Lock specifically */
+.header-center {
+    position: relative;
+}
+
+#header-lock-overlay {
+    border-radius: 12px;
+}
+
 .theme-dark .lock-overlay {
     background: rgba(3, 7, 18, 0.2);
 }
@@ -792,6 +802,7 @@ body {
     align-items: center;
     gap: 12px;
     width: 80%;
+    max-width: 250px;
 }
 
 .lock-overlay-content p {
@@ -800,6 +811,101 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--text-muted);
+}
+
+/* Export Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-card {
+    background: var(--bg-sidebar);
+    width: 90%;
+    max-width: 440px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.modal-card h2 {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    text-align: center;
+}
+
+.export-option-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.export-option-btn {
+    background: var(--bg-app);
+    border: 1px solid var(--border-color);
+    padding: 16px;
+    border-radius: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+.export-option-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.export-option-btn i {
+    width: 24px;
+    height: 24px;
+    color: var(--accent);
+    margin-top: 2px;
+}
+
+.export-option-btn div h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.export-option-btn div p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.modal-close-btn {
+    align-self: center;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 0.8rem;
 }
 
 .w-full {
