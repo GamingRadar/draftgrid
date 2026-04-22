@@ -73,17 +73,48 @@ class DraftGrid {
         ];
 
         this.PRESETS_2D = {
-            'ideation': { boxCount: 8, ratio: '2:3' },
-            'thumbnails': { boxCount: 12, ratio: '1:1' },
-            'hero': { boxCount: 2, ratio: '3:4' },
-            'storyboard': { boxCount: 6, ratio: '2:3' }
+            'ideation': {
+                orientation: 'landscape', boxCount: 6, ratio: '3:4',
+                customRatio: { w: 1.85, h: 1 }, spacing: 'medium',
+                marginPreset: 'none', customMargin: 10, strokeColor: '#101f37',
+                showLabels: false, showMetaBorder: false, showWatermark: true,
+                includeQRCode: false, prime2D: 'rect', scale2D: 90
+            },
+            'storyboard': {
+                orientation: 'portrait', boxCount: 8, ratio: 'custom',
+                customRatio: { w: 1.85, h: 1 }, spacing: 'medium',
+                marginPreset: 'none', customMargin: 10, strokeColor: '#101f37',
+                reserveHeader: true, headerHeight: 17, showLabels: true,
+                showMetaBorder: true, subtitle: 'Scene '
+            },
+            'ui-ux': {
+                orientation: 'landscape', boxCount: 3, ratio: 'custom',
+                customRatio: { w: 375, h: 812 }, spacing: 'large',
+                marginPreset: 'narrow', strokeColor: '#101f37',
+                reserveHeader: true, headerHeight: 17, showLabels: true,
+                showMetaBorder: true
+            }
         };
 
         this.PRESETS_3D = {
-            'study-box': { shapeType: 'cube', boxCount: 6, rotX: 15, rotY: 45, dimL: 1.0, dimB: 1.0, dimH: 1.0, showInlineGrid: true },
-            'hero-sphere': { shapeType: 'sphere', boxCount: 2, rotX: 0, rotY: 0, dimRX: 1.0, dimRY: 1.0, dimRZ: 1.0, showInlineGrid: true },
-            'product-cyl': { shapeType: 'cylinder', boxCount: 4, rotX: 20, rotY: 15, dimRT: 1.0, dimRBot: 1.0, dimCH: 1.2 },
-            'complex-3d': { shapeType: 'cube', boxCount: 8, rotX: 25, rotY: 45, dimL: 0.6, dimB: 1.5, dimH: 1.0 }
+            'hero-3d': { 
+                orientation: 'landscape', dimension: '3d', boxCount: 1, 
+                ratio: '3:4', spacing: 'small', marginPreset: 'narrow', 
+                reserveHeader: true, showLabels: true, showMetaBorder: true, 
+                shapeType: 'cube', projectionMode: 'persp', isXray: true, 
+                showInlineGrid: true, shapeDepth: 273, inlineDensity: 4, 
+                rotX: 0, rotY: 47, rotZ: 0, dimL: 0.5, dimB: 1, dimH: 1.5 
+            },
+            'sphere': { 
+                orientation: 'landscape', dimension: '3d', boxCount: 3, 
+                shapeType: 'sphere', rotX: 9, rotY: 0, showInlineGrid: true, 
+                shapeDepth: 273 
+            },
+            'cylinder': { 
+                orientation: 'landscape', dimension: '3d', boxCount: 3, 
+                shapeType: 'cylinder', isXray: true, showInlineGrid: true, 
+                shapeDepth: 287, dimRT: 0.8, dimRBot: 1.2, dimCH: 2.5 
+            }
         };
 
         this.init();
@@ -187,6 +218,7 @@ class DraftGrid {
 
             // Template System
             btnImportTemplate: document.getElementById('btn-import-template'),
+            btnImportTemplate3D: document.getElementById('btn-import-template-3d'),
             templateFileInput: document.getElementById('template-file-input'),
             btnExportTemplate: document.getElementById('btn-export-template'),
             btnEditTemplateLeft: document.getElementById('btn-edit-template-left'),
@@ -286,7 +318,9 @@ class DraftGrid {
 
         // Template System Bindings
         safeBind(this.els.btnExportTemplate, 'onclick', () => this.handleExportTemplate());
-        safeBind(this.els.btnImportTemplate, 'onclick', () => this.els.templateFileInput.click());
+        [this.els.btnImportTemplate, this.els.btnImportTemplate3D].forEach(btn => {
+            safeBind(btn, 'onclick', () => this.els.templateFileInput.click());
+        });
         safeBind(this.els.templateFileInput, 'onchange', (e) => this.handleImportTemplate(e));
         [this.els.btnEditTemplateLeft, this.els.btnEditTemplateRight].forEach(btn => {
             safeBind(btn, 'onclick', () => this.updateState({ isTemplateLocked: false }));

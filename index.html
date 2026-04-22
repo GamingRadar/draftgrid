@@ -105,13 +105,17 @@
                         <div class="section-title"><i data-lucide="zap"></i> 2D Presets</div>
                         <div class="section-content">
                             <div class="preset-grid">
-                                <button class="preset-card" data-preset="ideation"><i
+                                <button class="preset-card" data-preset="ideation"
+                                    data-note="Standard Landscape grid optimized for broad ideation and layout sketches."><i
                                         data-lucide="lightbulb"></i><span>Ideation</span></button>
-                                <button class="preset-card" data-preset="thumbnails"><i
-                                        data-lucide="grid-3x3"></i><span>Thumbnails</span></button>
-                                <button class="preset-card" data-preset="hero"><i
-                                        data-lucide="image"></i><span>Hero</span></button>
-                                <button class="preset-card" id="btn-import-template"><i
+                                <button class="preset-card" data-preset="storyboard"
+                                    data-note="8-up Cinemascope (1.85:1) grid perfect for film and animation storyboarding."><i
+                                        data-lucide="grid-3x3"></i><span>Storyboard</span></button>
+                                <button class="preset-card" data-preset="ui-ux"
+                                    data-note="Vertical 375x812 mobile aspect ratio for screen-flow and UI design."><i
+                                        data-lucide="smartphone"></i><span>UI/UX</span></button>
+                                <button class="preset-card" id="btn-import-template"
+                                    data-note="Load your custom 2D design templates (.dg)"><i
                                         data-lucide="upload-cloud"></i><span>Import</span></button>
                                 <input type="file" id="template-file-input" accept=".dg,.json" class="hidden">
                             </div>
@@ -178,14 +182,18 @@
                         <div class="section-title"><i data-lucide="zap"></i> 3D Presets</div>
                         <div class="section-content">
                             <div class="preset-grid">
-                                <button class="preset-card" data-preset="study-box"><i data-lucide="box"></i><span>Box
-                                        Study</span></button>
-                                <button class="preset-card" data-preset="hero-sphere"><i
+                                <button class="preset-card" data-preset="hero-3d"
+                                    data-note="High-impact 3D layout optimized for final product renders and hero shots."><i
+                                        data-lucide="box"></i><span>Hero 3D</span></button>
+                                <button class="preset-card" data-preset="sphere"
+                                    data-note="3-up spherical design template for light/form ideation."><i
                                         data-lucide="circle"></i><span>Sphere</span></button>
-                                <button class="preset-card" data-preset="product-cyl"><i
+                                <button class="preset-card" data-preset="cylinder"
+                                    data-note="3-cylinder setup for vertical product and industrial ideation."><i
                                         data-lucide="database"></i><span>Cylinder</span></button>
-                                <button class="preset-card" data-preset="complex-3d"><i
-                                        data-lucide="layers"></i><span>Complex</span></button>
+                                <button class="preset-card" id="btn-import-template-3d"
+                                    data-note="Load your custom 3D design templates (.dg)"><i
+                                        data-lucide="upload-cloud"></i><span>Import</span></button>
                             </div>
                         </div>
                     </section>
@@ -499,21 +507,33 @@
             <h2>Template Security</h2>
             <div class="export-option-grid">
                 <button class="export-option-btn" data-mode="full">
-                    <i data-lucide="unlock"></i>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" class="export-icon">
+                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                    </svg>
                     <div>
                         <h3>Fully Editable</h3>
                         <p>Users can change everything immediately.</p>
                     </div>
                 </button>
                 <button class="export-option-btn" data-mode="partial">
-                    <i data-lucide="lock"></i>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" class="export-icon">
+                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
                     <div>
                         <h3>Partially Editable</h3>
                         <p>Design is locked but users can click "Edit" to modify.</p>
                     </div>
                 </button>
                 <button class="export-option-btn" data-mode="strict">
-                    <i data-lucide="shield-alert"></i>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" class="export-icon">
+                        <path
+                            d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+                    </svg>
                     <div>
                         <h3>Strictly Locked</h3>
                         <p>Design is permanently locked. No "Edit" button.</p>

@@ -171,7 +171,8 @@ body {
     border-right: 1px solid var(--border-color);
     position: relative;
     /* CRITICAL: Contain the absolute lock-overlay */
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: hidden;
     /* PREVENT: Blur from spanning across screen */
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
         margin 0.4s cubic-bezier(0.4, 0, 0.2, 1),
@@ -182,8 +183,11 @@ body {
 .sidebar-scroll {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
+    /* BLOCK: Horizontal bypass leaks */
     scrollbar-width: thin;
-    position: relative; /* Contain lock overlays within scroll area */
+    position: relative;
+    /* Contain lock overlays within scroll area */
 }
 
 .right-sidebar {
@@ -285,6 +289,43 @@ body {
     border-color: var(--accent);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Preset Tooltips */
+.preset-card {
+    position: relative;
+}
+
+.preset-card:hover::after {
+    content: attr(data-note);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-main);
+    color: var(--bg-sidebar);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    width: 140px;
+    line-height: 1.3;
+    pointer-events: none;
+    z-index: 100;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    text-transform: none;
+    font-weight: 500;
+}
+
+.preset-card:hover::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--text-main);
+    z-index: 101;
 }
 
 .preset-card:hover i,
@@ -853,6 +894,7 @@ body {
     font-family: var(--font-heading);
     font-size: 1.25rem;
     text-align: center;
+    color: var(--text-main);
 }
 
 .export-option-grid {
@@ -879,22 +921,33 @@ body {
     background: var(--accent-soft);
 }
 
-.export-option-btn i {
+.export-icon {
     width: 24px;
     height: 24px;
-    color: var(--accent);
     margin-top: 2px;
+    flex-shrink: 0;
 }
 
 .export-option-btn div h3 {
     font-size: 0.9rem;
     font-weight: 700;
     margin-bottom: 4px;
+    color: var(--text-main);
 }
 
 .export-option-btn div p {
     font-size: 0.75rem;
     color: var(--text-muted);
+}
+
+#btn-import-template {
+    border: 1px solid var(--accent);
+    box-shadow: 0 0 12px var(--accent-soft);
+    background: var(--accent-soft);
+}
+
+#btn-import-template i svg {
+    stroke: var(--accent) !important;
 }
 
 .modal-close-btn {
