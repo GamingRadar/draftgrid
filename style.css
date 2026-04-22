@@ -169,6 +169,10 @@ body {
     display: flex;
     flex-direction: column;
     border-right: 1px solid var(--border-color);
+    position: relative;
+    /* CRITICAL: Contain the absolute lock-overlay */
+    overflow: hidden;
+    /* PREVENT: Blur from spanning across screen */
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
         margin 0.4s cubic-bezier(0.4, 0, 0.2, 1),
         width 0.4s ease;
@@ -299,10 +303,11 @@ body {
 }
 
 .sidebar-footer {
-    padding: 24px;
+    padding: 20px;
     border-top: 1px solid var(--border-color);
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
     background: var(--bg-sidebar);
 }
 
@@ -571,13 +576,20 @@ body {
     background: var(--accent-soft);
     color: var(--accent);
     border: 1px solid var(--accent);
-    padding: 8px 16px;
+    padding: 10px 16px;
     border-radius: 12px;
     cursor: pointer;
     font-weight: 700;
+    font-size: 0.85rem;
     display: flex;
     align-items: center;
     gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.primary-icon-button:hover {
+    background: var(--accent);
+    color: white;
 }
 
 .icon-button {
@@ -736,6 +748,7 @@ body {
 /* Template Locking System */
 .locked-parent {
     position: relative;
+    overflow: hidden;
 }
 
 .lock-overlay {
