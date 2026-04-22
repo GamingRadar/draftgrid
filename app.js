@@ -127,6 +127,7 @@ class DraftGrid {
             dimL: document.getElementById('dim-l'), dimB: document.getElementById('dim-b'), dimH: document.getElementById('dim-h'),
             dimRX: document.getElementById('dim-rx'), dimRY: document.getElementById('dim-ry'), dimRZ: document.getElementById('dim-rz'),
             dimRT: document.getElementById('dim-rt'), dimRBot: document.getElementById('dim-rbot'), dimCH: document.getElementById('dim-ch'),
+            btnMakeCone: document.getElementById('btn-make-cone'),
             panels: { cuboid: document.getElementById('m-cuboid'), sphere: document.getElementById('m-sphere'), cylinder: document.getElementById('m-cylinder') },
 
             // Shared / Global
@@ -206,7 +207,7 @@ class DraftGrid {
         safeBind(this.els.rotZ, 'oninput', (e) => this.updateState({ rotZ: parseInt(e.target.value) }));
         safeBind(this.els.inlineDensity, 'oninput', (e) => this.updateState({ inlineDensity: parseInt(e.target.value) }));
 
-        const bindMeas = (el, key) => { safeBind(el, 'oninput', (e) => this.updateState({ [key]: parseFloat(e.target.value) || 0.1 })); };
+        const bindMeas = (el, key) => { safeBind(el, 'oninput', (e) => this.updateState({ [key]: parseFloat(e.target.value) !== undefined ? parseFloat(e.target.value) : 1.0 })); };
         bindMeas(this.els.dimL, 'dimL'); bindMeas(this.els.dimB, 'dimB'); bindMeas(this.els.dimH, 'dimH');
         bindMeas(this.els.dimRX, 'dimRX'); bindMeas(this.els.dimRY, 'dimRY'); bindMeas(this.els.dimRZ, 'dimRZ');
         bindMeas(this.els.dimRT, 'dimRT'); bindMeas(this.els.dimRBot, 'dimRBot'); bindMeas(this.els.dimCH, 'dimCH');
@@ -555,13 +556,20 @@ class DraftGrid {
         const drawCircle = (ry, r, isHidden = false) => {
             if (isHidden && !this.state.isXray) return;
             ctx.beginPath();
-            if (isHidden) ctx.setLineDash([2, 5]); else ctx.setLineDash([]);
+            if (isHidden) {
+                ctx.setLineDash([2, 5]);
+                ctx.strokeStyle = '#94a3b8';
+            } else {
+                ctx.setLineDash([]);
+                ctx.strokeStyle = this.state.strokeColor;
+            }
             for (let i = 0; i <= 360; i += 15) {
                 const a = (i * Math.PI) / 180;
                 const p = project(Math.cos(a) * r, ry, Math.sin(a) * r);
                 if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
             }
-            ctx.stroke();
+            if (isHidden) ctx.stroke(); else { ctx.closePath(); ctx.stroke(); }
+            ctx.setLineDash([]); // Reset dash for next call
         };
 
         const s = size / 2;
@@ -594,38 +602,95 @@ class DraftGrid {
                 break;
 
             case 'cylinder':
-                drawCircle(s, s); drawCircle(-s, s, true);
-                const sideA = ay;
-                drawLine(project(Math.cos(sideA + Math.PI / 2) * s, s, Math.sin(sideA + Math.PI / 2) * s), project(Math.cos(sideA + Math.PI / 2) * s, -s, Math.sin(sideA + Math.PI / 2) * s));
-                drawLine(project(Math.cos(sideA - Math.PI / 2) * s, s, Math.sin(sideA - Math.PI / 2) * s), project(Math.cos(sideA - Math.PI / 2) * s, -s, Math.sin(sideA - Math.PI / 2) * s));
+                // Draw top and bottom circles
+                drawCircle(s, s);
+                drawCircle(-s, s);
+
+                // Vertical silhouette lines
+                // We find the 'widest' points in projection space
+                const getExtremes = (ry) => {
+                    let bestX1 = -Infinity, bestX2 = Infinity;
+                    let p1, p2;
+                    for (let a = 0; a < 360; a += 10) {
+                        const pt = project(Math.cos(rad(a)) * s, ry, Math.sin(rad(a)) * s);
+                        if (pt.x > bestX1) { bestX1 = pt.x; p1 = pt; }
+                        if (pt.x < bestX2) { bestX2 = pt.x; p2 = pt; }
+                    }
+                    return [p1, p2];
+                };
+
+                const [t1, t2] = getExtremes(s);
+                const [b1, b2] = getExtremes(-s);
+                drawLine(t1, b1);
+                drawLine(t2, b2);
+
                 if (this.state.showInlineGrid && density > 0) {
-                    for (let i = 1; i < density; i++) {
-                        const h = -s + (size / density) * i;
+                    for (let i = 1; i <= density; i++) {
+                        const h = -s + (size / (density + 1)) * i;
                         drawCircle(h, s, true);
                     }
                 }
                 break;
 
             case 'sphere':
-                ctx.beginPath(); ctx.arc(centerX, centerY, s * this.state.dimRX * zoom, 0, Math.PI * 2); ctx.stroke();
+                // Unified scaling: all rings and silhouette use the same radius logic
+                const drawSphereRing = (type, isHidden = false) => {
+                    ctx.beginPath();
+                    if (isHidden) { ctx.setLineDash([2, 5]); ctx.strokeStyle = '#94a3b8'; }
+                    else { ctx.setLineDash([]); ctx.strokeStyle = this.state.strokeColor; }
+
+                    for (let i = 0; i <= 360; i += 10) {
+                        const a = rad(i);
+                        let p;
+                        if (type === 'equator') p = project(Math.cos(a) * s, 0, Math.sin(a) * s);
+                        else if (type === 'meridian1') p = project(0, Math.cos(a) * s, Math.sin(a) * s);
+                        else if (type === 'meridian2') p = project(Math.cos(a) * s, Math.sin(a) * s, 0);
+                        else if (type === 'silhouette') {
+                            // Pseudo-silhouette: a circle that scales with the max projected dimension
+                            const maxScale = Math.max(this.state.dimRX, this.state.dimRY, this.state.dimRZ);
+                            // We use a simple 2D arc for the silhouette but scaled correctly
+                            ctx.arc(centerX, centerY, s * maxScale * 0.72, 0, Math.PI * 2);
+                            ctx.stroke(); return;
+                        }
+
+                        if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+                    }
+                    ctx.stroke();
+                };
+
+                // 1. Perimeter / Outline (Always visible, solid)
+                drawSphereRing('silhouette');
+
+                // 2. X-Ray Features: Equator & Meridian (Solid color when X-Ray is on)
+                if (this.state.isXray) {
+                    drawSphereRing('equator');
+                    drawSphereRing('meridian1');
+                }
+
+                // 3. Inline Grid: High density mesh (Dotted)
                 if (this.state.showInlineGrid && density > 0) {
-                    for (let n = 1; n < density; n++) {
-                        const rZ = rad(180 / density * n);
-                        ctx.beginPath(); if (ctx.setLineDash) ctx.setLineDash([2, 5]);
+                    for (let n = 1; n <= density; n++) {
+                        const offset = (n / (density + 1)) * 180;
+                        const rLat = rad(offset - 90);
+                        const radiusAtLat = s * Math.cos(rLat);
+                        const yAtLat = s * Math.sin(rLat);
+                        ctx.beginPath(); ctx.setLineDash([2, 5]); ctx.strokeStyle = '#94a3b8';
                         for (let i = 0; i <= 360; i += 15) {
-                            const a = (i * Math.PI) / 180;
-                            const p = project(Math.cos(a) * s * Math.cos(rZ), Math.sin(a) * s, Math.cos(a) * s * Math.sin(rZ));
+                            const a = rad(i);
+                            const p = project(Math.cos(a) * radiusAtLat, yAtLat, Math.sin(a) * radiusAtLat);
                             if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
                         }
                         ctx.stroke();
                     }
                 }
+                ctx.setLineDash([]);
                 break;
         }
     }
 
     drawBars(ctx, L) {
         ctx.globalAlpha = 1;
+        ctx.setLineDash([]); // Ensure solid borders
         ctx.strokeStyle = this.state.strokeColor;
         ctx.fillStyle = this.state.strokeColor;
 
