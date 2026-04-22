@@ -190,6 +190,19 @@ body {
     /* Contain lock overlays within scroll area */
 }
 
+/* BREAKOUT LOGIC: Allow tooltips to span across boundaries and above header */
+.app-main:has(.preset-card:hover) {
+    z-index: 150;
+    /* Bring above header (100) */
+    overflow: visible;
+}
+
+.sidebar:has(.preset-card:hover),
+.sidebar:has(.preset-card:hover) .sidebar-scroll {
+    z-index: 200;
+    overflow: visible !important;
+}
+
 .right-sidebar {
     border-right: none;
     border-left: 1px solid var(--border-color);
@@ -289,6 +302,7 @@ body {
     border-color: var(--accent);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    z-index: 10;
 }
 
 /* Preset Tooltips */
@@ -299,19 +313,21 @@ body {
 .preset-card:hover::after {
     content: attr(data-note);
     position: absolute;
-    bottom: calc(100% + 10px);
+    bottom: calc(100% + 12px);
+    /* Spawns at top */
     left: 50%;
     transform: translateX(-50%);
     background: var(--text-main);
     color: var(--bg-sidebar);
-    padding: 8px 12px;
+    padding: 10px 14px;
     border-radius: 8px;
     font-size: 0.7rem;
-    width: 140px;
-    line-height: 1.3;
+    width: 160px;
+    line-height: 1.4;
     pointer-events: none;
-    z-index: 100;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    z-index: 900;
+    /* Above siblings, below lock-overlay (1000) */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     text-align: center;
     text-transform: none;
     font-weight: 500;
@@ -321,11 +337,13 @@ body {
     content: '';
     position: absolute;
     bottom: calc(100% + 4px);
+    /* Spawns at top */
     left: 50%;
     transform: translateX(-50%);
     border: 6px solid transparent;
     border-top-color: var(--text-main);
-    z-index: 101;
+    /* Downward pointing arrow */
+    z-index: 901;
 }
 
 .preset-card:hover i,
@@ -940,13 +958,15 @@ body {
     color: var(--text-muted);
 }
 
-#btn-import-template {
+#btn-import-template,
+#btn-import-template-3d {
     border: 1px solid var(--accent);
     box-shadow: 0 0 12px var(--accent-soft);
     background: var(--accent-soft);
 }
 
-#btn-import-template i svg {
+#btn-import-template i svg,
+#btn-import-template-3d i svg {
     stroke: var(--accent) !important;
 }
 

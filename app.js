@@ -97,23 +97,23 @@ class DraftGrid {
         };
 
         this.PRESETS_3D = {
-            'hero-3d': { 
-                orientation: 'landscape', dimension: '3d', boxCount: 1, 
-                ratio: '3:4', spacing: 'small', marginPreset: 'narrow', 
-                reserveHeader: true, showLabels: true, showMetaBorder: true, 
-                shapeType: 'cube', projectionMode: 'persp', isXray: true, 
-                showInlineGrid: true, shapeDepth: 273, inlineDensity: 4, 
-                rotX: 0, rotY: 47, rotZ: 0, dimL: 0.5, dimB: 1, dimH: 1.5 
+            'hero-3d': {
+                orientation: 'landscape', dimension: '3d', boxCount: 1,
+                ratio: '3:4', spacing: 'small', marginPreset: 'narrow',
+                reserveHeader: true, showLabels: true, showMetaBorder: true,
+                shapeType: 'cube', projectionMode: 'persp', isXray: true,
+                showInlineGrid: true, shapeDepth: 273, inlineDensity: 4,
+                rotX: 0, rotY: 47, rotZ: 0, dimL: 0.5, dimB: 1, dimH: 1.5
             },
-            'sphere': { 
-                orientation: 'landscape', dimension: '3d', boxCount: 3, 
-                shapeType: 'sphere', rotX: 9, rotY: 0, showInlineGrid: true, 
-                shapeDepth: 273 
+            'sphere': {
+                orientation: 'landscape', dimension: '3d', boxCount: 3,
+                shapeType: 'sphere', rotX: 9, rotY: 0, showInlineGrid: true,
+                shapeDepth: 273
             },
-            'cylinder': { 
-                orientation: 'landscape', dimension: '3d', boxCount: 3, 
-                shapeType: 'cylinder', isXray: true, showInlineGrid: true, 
-                shapeDepth: 287, dimRT: 0.8, dimRBot: 1.2, dimCH: 2.5 
+            'cylinder': {
+                orientation: 'landscape', dimension: '3d', boxCount: 3,
+                shapeType: 'cylinder', isXray: true, showInlineGrid: true,
+                shapeDepth: 287, dimRT: 0.8, dimRBot: 1.2, dimCH: 2.5
             }
         };
 
@@ -199,6 +199,7 @@ class DraftGrid {
             pageCount: document.getElementById('page-count'),
             downloadBtn: document.getElementById('download-pdf'),
             strokeColor: document.getElementById('stroke-color'),
+            strokeColorHex: document.getElementById('stroke-color-hex'),
             strokeOpacity: document.getElementById('stroke-opacity'),
             reserveHeader: document.getElementById('reserve-header'),
             reserveFooter: document.getElementById('reserve-footer'),
@@ -306,7 +307,19 @@ class DraftGrid {
         safeBind(this.els.showWatermark, 'onchange', (e) => this.updateState({ showWatermark: e.target.checked }));
         safeBind(this.els.includeQRCode, 'onchange', (e) => this.updateState({ includeQRCode: e.target.checked }));
         safeBind(this.els.pageCount, 'oninput', (e) => this.updateState({ pageCount: parseInt(e.target.value) || 1 }));
-        safeBind(this.els.strokeColor, 'oninput', (e) => this.updateState({ strokeColor: e.target.value }));
+        safeBind(this.els.strokeColor, 'oninput', (e) => {
+            const color = e.target.value;
+            if (this.els.strokeColorHex) this.els.strokeColorHex.value = color.toUpperCase();
+            this.updateState({ strokeColor: color });
+        });
+        safeBind(this.els.strokeColorHex, 'oninput', (e) => {
+            let color = e.target.value;
+            if (color.length > 0 && !color.startsWith('#')) color = '#' + color;
+            if (/^#[0-9A-F]{6}$/i.test(color)) {
+                if (this.els.strokeColor) this.els.strokeColor.value = color;
+                this.updateState({ strokeColor: color });
+            }
+        });
         safeBind(this.els.strokeOpacity, 'oninput', (e) => this.updateState({ strokeOpacity: parseFloat(e.target.value) }));
         safeBind(this.els.reserveHeader, 'onchange', (e) => this.updateState({ reserveHeader: e.target.checked }));
         safeBind(this.els.reserveFooter, 'onchange', (e) => this.updateState({ reserveFooter: e.target.checked }));
@@ -402,6 +415,10 @@ class DraftGrid {
             this.els.boxCountDisplay2D.textContent = this.state.boxCount;
         }
 
+        if (this.els.strokeColor) {
+            this.els.strokeColor.value = this.state.strokeColor;
+            if (this.els.strokeColorHex) this.els.strokeColorHex.value = this.state.strokeColor.toUpperCase();
+        }
         if (this.els.scale2D) this.els.scale2D.value = this.state.scale2D;
         if (this.els.scale2DVal) this.els.scale2DVal.textContent = `${this.state.scale2D}%`;
 

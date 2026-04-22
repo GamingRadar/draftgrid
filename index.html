@@ -106,16 +106,16 @@
                         <div class="section-content">
                             <div class="preset-grid">
                                 <button class="preset-card" data-preset="ideation"
-                                    data-note="Standard Landscape grid optimized for broad ideation and layout sketches."><i
+                                    data-note="Standard Landscape grid for ideation and layout sketches."><i
                                         data-lucide="lightbulb"></i><span>Ideation</span></button>
                                 <button class="preset-card" data-preset="storyboard"
-                                    data-note="8-up Cinemascope (1.85:1) grid perfect for film and animation storyboarding."><i
+                                    data-note="Perfect for film and animation storyboarding."><i
                                         data-lucide="grid-3x3"></i><span>Storyboard</span></button>
                                 <button class="preset-card" data-preset="ui-ux"
                                     data-note="Vertical 375x812 mobile aspect ratio for screen-flow and UI design."><i
                                         data-lucide="smartphone"></i><span>UI/UX</span></button>
                                 <button class="preset-card" id="btn-import-template"
-                                    data-note="Load your custom 2D design templates (.dg)"><i
+                                    data-note="Load your custom design templates (.dg)"><i
                                         data-lucide="upload-cloud"></i><span>Import</span></button>
                                 <input type="file" id="template-file-input" accept=".dg,.json" class="hidden">
                             </div>
@@ -183,7 +183,7 @@
                         <div class="section-content">
                             <div class="preset-grid">
                                 <button class="preset-card" data-preset="hero-3d"
-                                    data-note="High-impact 3D layout optimized for final product renders and hero shots."><i
+                                    data-note="High-impact layout for final product renders"><i
                                         data-lucide="box"></i><span>Hero 3D</span></button>
                                 <button class="preset-card" data-preset="sphere"
                                     data-note="3-up spherical design template for light/form ideation."><i
@@ -192,7 +192,7 @@
                                     data-note="3-cylinder setup for vertical product and industrial ideation."><i
                                         data-lucide="database"></i><span>Cylinder</span></button>
                                 <button class="preset-card" id="btn-import-template-3d"
-                                    data-note="Load your custom 3D design templates (.dg)"><i
+                                    data-note="Load your custom design templates (.dg)"><i
                                         data-lucide="upload-cloud"></i><span>Import</span></button>
                             </div>
                         </div>
@@ -201,7 +201,7 @@
                         <summary><i data-lucide="box"></i> 3D Geometry Engine</summary>
                         <div class="section-content">
                             <div class="control-group">
-                                <h4>Object Quantity</h4>
+                                <h4>Shape Count</h4>
                                 <div class="input-wrapper">
                                     <input type="range" id="box-count-3d" min="1" max="8" value="4">
                                     <span id="box-count-display-3d">4</span>
@@ -284,7 +284,7 @@
                             </div>
                         </div>
                     </details>
-                    <details class="sidebar-section" open>
+                    <details class="sidebar-section">
                         <summary><i data-lucide="video"></i> View Orientation</summary>
                         <div class="section-content">
                             <div class="control-group no-border">
@@ -402,7 +402,7 @@
                                 <input type="number" id="margin-val" value="10" class="text-input mt-2 hidden">
                             </div>
                             <div class="control-group no-border">
-                                <h4>Gutter Spacing</h4>
+                                <h4>Grid Spacing</h4>
                                 <div class="radio-group-grid" id="spacing-group">
                                     <label class="radio-item"><input type="radio" name="spacing"
                                             value="small"><span>Small</span></label>
@@ -415,7 +415,7 @@
                                 </div>
                                 <div id="custom-spacing-inputs" class="hidden mt-2">
                                     <div class="input-row">
-                                        <input type="number" id="custom-spacing-val" value="5" min="0" step="0.1"
+                                        <input type="number" id="custom-spacing-val" value="5" min="0" step="1"
                                             class="text-input mini" style="flex:1">
                                         <span class="ml-2 font-tiny">mm</span>
                                     </div>
@@ -473,8 +473,13 @@
                         <summary><i data-lucide="palette"></i> Stroke colour & opacity</summary>
                         <div class="section-content">
                             <div class="control-group no-border">
-                                <div class="input-row" style="display:flex; align-items:center; gap:10px">
+                                <div class="input-row mb-3" style="display: flex; align-items: center; gap: 12px;">
                                     <input type="color" id="stroke-color" value="#1e293b" class="color-picker">
+                                    <input type="text" id="stroke-color-hex" value="#1e293b" class="text-input mini"
+                                        style="width: 100px; text-transform: uppercase;" placeholder="#000000">
+                                </div>
+                                <div class="input-row" style="display: flex; align-items: center; gap: 12px;">
+                                    <label class="font-tiny" style="width: 60px;">Opacity</label>
                                     <input type="range" id="stroke-opacity" min="0.1" max="1" step="0.1" value="1"
                                         style="flex:1">
                                 </div>
