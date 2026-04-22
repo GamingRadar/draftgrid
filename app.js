@@ -48,9 +48,13 @@ class DraftGrid {
             dimRT: 1.0, dimRBot: 1.0, dimCH: 1.0,
             // 2D Engine
             prime2D: 'rect',
+            scale2D: 80,
+            dim2DA: 40, dim2DB: 40, dim2DC: 40,
             // UI
             rightSidebarOpen: true,
             leftSidebarOpen: true,
+            preserveCase: false,
+            customSpacing: 5,
             zoomLevel: 0.6 // Increased default preview size
         };
 
@@ -159,7 +163,20 @@ class DraftGrid {
             footerHeightDisplay: document.getElementById('footer-height-display'),
             pOrientation: document.getElementById('p-orientation'),
             pRatio: document.getElementById('p-ratio'),
-            pCount: document.getElementById('p-count')
+            pCount: document.getElementById('p-count'),
+
+            // New 2D and Shared
+            m2DTriangle: document.getElementById('m-2d-triangle'),
+            scale2D: document.getElementById('scale-2d'),
+            scale2DVal: document.getElementById('scale-2d-val'),
+            dim2DA: document.getElementById('dim-2d-ta'),
+            dim2DB: document.getElementById('dim-2d-tb'),
+            dim2DC: document.getElementById('dim-2d-tc'),
+            btnApplyTri: document.getElementById('btn-apply-tri'),
+            triError: document.getElementById('tri-error'),
+            customSpacingInputs: document.getElementById('custom-spacing-inputs'),
+            customSpacingVal: document.getElementById('custom-spacing-val'),
+            preserveCase: document.getElementById('preserve-case')
         };
         this.ctx = this.els.canvas.getContext('2d');
     }
@@ -192,6 +209,25 @@ class DraftGrid {
         [this.els.ratioW, this.els.ratioH].forEach(el => safeBind(el, 'oninput', () => {
             this.updateState({ customRatio: { w: parseFloat(this.els.ratioW.value) || 1, h: parseFloat(this.els.ratioH.value) || 1 }, activePreset: null });
         }));
+
+        safeBind(this.els.scale2D, 'oninput', (e) => this.updateState({ scale2D: parseInt(e.target.value) }));
+
+        const validateTri = () => {
+            const a = Number(this.els.dim2DA.value) || 40;
+            const b = Number(this.els.dim2DB.value) || 40;
+            const c = Number(this.els.dim2DC.value) || 40;
+            const s = [a, b, c].sort((x, y) => x - y);
+            if (s[0] + s[1] > s[2]) {
+                this.updateState({ dim2DA: a, dim2DB: b, dim2DC: c, activePreset: null });
+                if (this.els.triError) this.els.triError.classList.add('hidden');
+            } else {
+                if (this.els.triError) this.els.triError.classList.remove('hidden');
+            }
+        };
+        safeBind(this.els.btnApplyTri, 'onclick', validateTri);
+
+        const clearPresetOnTriInput = () => { if (this.state.activePreset) this.updateState({ activePreset: null }); };
+        [this.els.dim2DA, this.els.dim2DB, this.els.dim2DC].forEach(el => safeBind(el, 'oninput', clearPresetOnTriInput));
 
         // 3D Specific
         safeBind(this.els.boxCount3D, 'oninput', (e) => {
@@ -239,6 +275,8 @@ class DraftGrid {
         safeBind(this.els.reserveFooter, 'onchange', (e) => this.updateState({ reserveFooter: e.target.checked }));
         safeBind(this.els.headerHeightInput, 'oninput', (e) => this.updateState({ headerHeight: parseInt(e.target.value) }));
         safeBind(this.els.footerHeightInput, 'oninput', (e) => this.updateState({ footerHeight: parseInt(e.target.value) }));
+        safeBind(this.els.customSpacingVal, 'oninput', (e) => this.updateState({ customSpacing: parseFloat(e.target.value) || 0 }));
+        safeBind(this.els.preserveCase, 'onchange', (e) => this.updateState({ preserveCase: e.target.checked }));
         safeBind(this.els.downloadBtn, 'onclick', () => this.handleDownload());
 
         window.onresize = () => this.render();
@@ -299,9 +337,25 @@ class DraftGrid {
         if (is3D) {
             this.els.boxCount3D.value = this.state.boxCount;
             this.els.boxCountDisplay3D.textContent = this.state.boxCount;
+            this.els.rotX.value = this.state.rotX;
+            this.els.rotY.value = this.state.rotY;
+            this.els.rotZ.value = this.state.rotZ;
         } else {
             this.els.boxCount2D.value = this.state.boxCount;
             this.els.boxCountDisplay2D.textContent = this.state.boxCount;
+        }
+
+        this.els.m2DTriangle.classList.toggle('hidden', this.state.prime2D !== 'triangle');
+        if (this.els.scale2D) this.els.scale2D.value = this.state.scale2D;
+        if (this.els.scale2DVal) this.els.scale2DVal.textContent = `${this.state.scale2D}%`;
+
+        if (this.state.prime2D === 'triangle') {
+            const isEditing = [this.els.dim2DA, this.els.dim2DB, this.els.dim2DC].includes(document.activeElement);
+            if (!isEditing && (this.state.activePreset || this.els.dim2DA.value === "")) {
+                this.els.dim2DA.value = this.state.dim2DA;
+                this.els.dim2DB.value = this.state.dim2DB;
+                this.els.dim2DC.value = this.state.dim2DC;
+            }
         }
 
         this.els.presetCards.forEach(card => card.classList.toggle('active', card.dataset.preset === this.state.activePreset));
@@ -331,6 +385,10 @@ class DraftGrid {
             this.els.marginValInput.value = this.state.customMargin;
         }
         if (this.els.spacingInputs) { this.els.spacingInputs.forEach(i => i.checked = i.value === this.state.spacing); }
+        if (this.els.customSpacingInputs) this.els.customSpacingInputs.classList.toggle('hidden', this.state.spacing !== 'custom');
+        if (this.els.customSpacingVal) this.els.customSpacingVal.value = this.state.customSpacing;
+        if (this.els.preserveCase) this.els.preserveCase.checked = this.state.preserveCase;
+
         if (this.els.dateDetails) { this.els.dateDetails.classList.toggle('hidden', !this.state.showDate); }
         if (this.els.dateModeInputs) { this.els.dateModeInputs.forEach(i => i.checked = i.value === this.state.dateMode); }
         if (this.els.customDateVal) { this.els.customDateVal.classList.toggle('hidden', this.state.dateMode !== 'custom'); }
@@ -408,7 +466,12 @@ class DraftGrid {
 
         if (orientation === 'landscape' && count > 2) [cols, rows] = [rows, cols];
 
-        const spacingPx = this.state.spacing === 'small' ? 2 : (this.state.spacing === 'medium' ? 5 : 10);
+        let spacingPx = 5;
+        if (this.state.spacing === 'small') spacingPx = 2;
+        else if (this.state.spacing === 'medium') spacingPx = 5;
+        else if (this.state.spacing === 'large') spacingPx = 10;
+        else if (this.state.spacing === 'custom') spacingPx = this.state.customSpacing;
+
         let maxBoxW = (usableW - (cols - 1) * spacingPx) / cols;
         let maxBoxH = (usableH - (rows - 1) * spacingPx) / rows;
 
@@ -479,21 +542,40 @@ class DraftGrid {
     draw2DPrimitive(ctx, x, y, w, h) {
         ctx.beginPath();
         const cx = x + w / 2, cy = y + h / 2;
+        const s2D = (Number(this.state.scale2D) || 80) / 100;
+
         switch (this.state.prime2D) {
-            case 'rect': ctx.strokeRect(x, y, w, h); break;
+            case 'rect':
+                const rw = w * s2D, rh = h * s2D;
+                ctx.strokeRect(cx - rw / 2, cy - rh / 2, rw, rh);
+                break;
             case 'circle':
-                ctx.arc(cx, cy, Math.min(w, h) / 2, 0, Math.PI * 2);
-                ctx.stroke();
+                ctx.arc(cx, cy, (Math.min(w, h) / 2) * s2D, 0, Math.PI * 2);
                 break;
             case 'triangle':
-                const s = Math.min(w, h);
-                ctx.moveTo(cx, cy - s / 2);
-                ctx.lineTo(cx + s / 2, cy + s / 2);
-                ctx.lineTo(cx - s / 2, cy + s / 2);
+                // Numeric conversion and sorting for reliable construction
+                const ta = Number(this.state.dim2DA) || 40;
+                const tb = Number(this.state.dim2DB) || 40;
+                const tc = Number(this.state.dim2DC) || 40;
+                const s = [ta, tb, tc].sort((x, y) => x - y);
+                const s1 = s[0], s2 = s[1], s3 = s[2];
+
+                // Side lengths confirmed valid by validateTri, now project coords
+                // s3 is base. s2 is left-adjacent side.
+                let tx = (s2 * s2 + s3 * s3 - s1 * s1) / (2 * s3);
+                let ty = Math.sqrt(Math.max(0, s2 * s2 - tx * tx));
+
+                let fs = Math.min(w / s3, h / ty) * s2D;
+                const fW = s3 * fs, fH = ty * fs;
+                const sx = cx - fW / 2, sy = cy + fH / 2;
+
+                ctx.moveTo(sx, sy);
+                ctx.lineTo(sx + s3 * fs, sy);
+                ctx.lineTo(sx + tx * fs, sy - ty * fs);
                 ctx.closePath();
-                ctx.stroke();
                 break;
         }
+        ctx.stroke();
     }
 
     draw3DShape(ctx, x, y, w, h, mmToPx) {
@@ -708,19 +790,26 @@ class DraftGrid {
             ctx.font = `bold ${titleSize}px Outfit`;
             let t = this.state.title || " ";
             if (this.state.showLabels) t = `TITLE: ${t}`;
-            ctx.fillText(t.toUpperCase(), pad + 2, pad + h / 2 + (titleSize / 3));
+            t = this.state.preserveCase ? t : t.toUpperCase();
+            ctx.fillText(t, pad + 2, pad + h / 2 + (titleSize / 3));
 
             const subSize = Math.max(1.5, h * 0.15);
             ctx.font = `${subSize}px Inter`;
             let sub = this.state.subtitle || "";
-            if (sub) ctx.fillText(sub.toUpperCase(), pad + 2, pad + h - (subSize / 2));
+            if (sub) {
+                sub = this.state.preserveCase ? sub : sub.toUpperCase();
+                ctx.fillText(sub, pad + 2, pad + h - (subSize / 2));
+            }
 
             ctx.textAlign = "right";
             const authSize = Math.max(1.5, h * 0.15);
             ctx.font = `${authSize}px Inter`;
             let a = this.state.author || "";
             if (this.state.showLabels && a) a = `AUTHOR: ${a}`;
-            if (a) ctx.fillText(a.toUpperCase(), L.canvasW - pad - 2, pad + h / 2 + (authSize / 3));
+            if (a) {
+                a = this.state.preserveCase ? a : a.toUpperCase();
+                ctx.fillText(a, L.canvasW - pad - 2, pad + h / 2 + (authSize / 3));
+            }
         }
 
         // Footer
@@ -737,7 +826,8 @@ class DraftGrid {
                 ctx.textAlign = "left";
                 let d = this.getFormattedDate();
                 if (this.state.showLabels) d = `DATE: ${d}`;
-                ctx.fillText(d.toUpperCase(), pad + 2, fy + h / 2 + (footSize / 3));
+                d = this.state.preserveCase ? d : d.toUpperCase();
+                ctx.fillText(d, pad + 2, fy + h / 2 + (footSize / 3));
             }
 
             if (this.state.showPageNumbers) {
