@@ -165,15 +165,8 @@ class DraftGrid {
             pRatio: document.getElementById('p-ratio'),
             pCount: document.getElementById('p-count'),
 
-            // New 2D and Shared
-            m2DTriangle: document.getElementById('m-2d-triangle'),
             scale2D: document.getElementById('scale-2d'),
             scale2DVal: document.getElementById('scale-2d-val'),
-            dim2DA: document.getElementById('dim-2d-ta'),
-            dim2DB: document.getElementById('dim-2d-tb'),
-            dim2DC: document.getElementById('dim-2d-tc'),
-            btnApplyTri: document.getElementById('btn-apply-tri'),
-            triError: document.getElementById('tri-error'),
             customSpacingInputs: document.getElementById('custom-spacing-inputs'),
             customSpacingVal: document.getElementById('custom-spacing-val'),
             preserveCase: document.getElementById('preserve-case')
@@ -211,23 +204,6 @@ class DraftGrid {
         }));
 
         safeBind(this.els.scale2D, 'oninput', (e) => this.updateState({ scale2D: parseInt(e.target.value) }));
-
-        const validateTri = () => {
-            const a = Number(this.els.dim2DA.value) || 40;
-            const b = Number(this.els.dim2DB.value) || 40;
-            const c = Number(this.els.dim2DC.value) || 40;
-            const s = [a, b, c].sort((x, y) => x - y);
-            if (s[0] + s[1] > s[2]) {
-                this.updateState({ dim2DA: a, dim2DB: b, dim2DC: c, activePreset: null });
-                if (this.els.triError) this.els.triError.classList.add('hidden');
-            } else {
-                if (this.els.triError) this.els.triError.classList.remove('hidden');
-            }
-        };
-        safeBind(this.els.btnApplyTri, 'onclick', validateTri);
-
-        const clearPresetOnTriInput = () => { if (this.state.activePreset) this.updateState({ activePreset: null }); };
-        [this.els.dim2DA, this.els.dim2DB, this.els.dim2DC].forEach(el => safeBind(el, 'oninput', clearPresetOnTriInput));
 
         // 3D Specific
         safeBind(this.els.boxCount3D, 'oninput', (e) => {
@@ -345,18 +321,8 @@ class DraftGrid {
             this.els.boxCountDisplay2D.textContent = this.state.boxCount;
         }
 
-        this.els.m2DTriangle.classList.toggle('hidden', this.state.prime2D !== 'triangle');
         if (this.els.scale2D) this.els.scale2D.value = this.state.scale2D;
         if (this.els.scale2DVal) this.els.scale2DVal.textContent = `${this.state.scale2D}%`;
-
-        if (this.state.prime2D === 'triangle') {
-            const isEditing = [this.els.dim2DA, this.els.dim2DB, this.els.dim2DC].includes(document.activeElement);
-            if (!isEditing && (this.state.activePreset || this.els.dim2DA.value === "")) {
-                this.els.dim2DA.value = this.state.dim2DA;
-                this.els.dim2DB.value = this.state.dim2DB;
-                this.els.dim2DC.value = this.state.dim2DC;
-            }
-        }
 
         this.els.presetCards.forEach(card => card.classList.toggle('active', card.dataset.preset === this.state.activePreset));
 
@@ -540,39 +506,25 @@ class DraftGrid {
     }
 
     draw2DPrimitive(ctx, x, y, w, h) {
+        const s2D = (Number(this.state.scale2D) || 80);
+
+        if (this.state.prime2D === 'triangle') {
+            // Triangle uses immediate stroke strategy to prevent interference
+            TriangleEngine.draw(ctx, x, y, w, h, this.state, s2D);
+            return;
+        }
+
         ctx.beginPath();
         const cx = x + w / 2, cy = y + h / 2;
-        const s2D = (Number(this.state.scale2D) || 80) / 100;
+        const sF = s2D / 100;
 
         switch (this.state.prime2D) {
             case 'rect':
-                const rw = w * s2D, rh = h * s2D;
+                const rw = w * sF, rh = h * sF;
                 ctx.strokeRect(cx - rw / 2, cy - rh / 2, rw, rh);
                 break;
             case 'circle':
-                ctx.arc(cx, cy, (Math.min(w, h) / 2) * s2D, 0, Math.PI * 2);
-                break;
-            case 'triangle':
-                // Numeric conversion and sorting for reliable construction
-                const ta = Number(this.state.dim2DA) || 40;
-                const tb = Number(this.state.dim2DB) || 40;
-                const tc = Number(this.state.dim2DC) || 40;
-                const s = [ta, tb, tc].sort((x, y) => x - y);
-                const s1 = s[0], s2 = s[1], s3 = s[2];
-
-                // Side lengths confirmed valid by validateTri, now project coords
-                // s3 is base. s2 is left-adjacent side.
-                let tx = (s2 * s2 + s3 * s3 - s1 * s1) / (2 * s3);
-                let ty = Math.sqrt(Math.max(0, s2 * s2 - tx * tx));
-
-                let fs = Math.min(w / s3, h / ty) * s2D;
-                const fW = s3 * fs, fH = ty * fs;
-                const sx = cx - fW / 2, sy = cy + fH / 2;
-
-                ctx.moveTo(sx, sy);
-                ctx.lineTo(sx + s3 * fs, sy);
-                ctx.lineTo(sx + tx * fs, sy - ty * fs);
-                ctx.closePath();
+                ctx.arc(cx, cy, (Math.min(w, h) / 2) * sF, 0, Math.PI * 2);
                 break;
         }
         ctx.stroke();
