@@ -55,8 +55,21 @@ class DraftGrid {
             leftSidebarOpen: true,
             preserveCase: false,
             customSpacing: 5,
-            zoomLevel: 0.6 // Increased default preview size
+            zoomLevel: 0.6, // Increased default preview size
+            isTemplateLocked: false
         };
+
+        this.TEMPLATE_KEYS = [
+            'orientation', 'dimension', 'boxCount', 'ratio', 'customRatio', 
+            'spacing', 'customSpacing', 'marginPreset', 'customMargin', 
+            'strokeColor', 'strokeOpacity', 'reserveHeader', 'reserveFooter', 
+            'headerHeight', 'footerHeight', 'showLabels', 'showMetaBorder', 
+            'showWatermark', 'includeQRCode', 'prime2D', 'scale2D', 'shapeType', 
+            'projectionMode', 'isXray', 'showInlineGrid', 'shapeDepth', 
+            'inlineDensity', 'rotX', 'rotY', 'rotZ', 'dimL', 'dimB', 'dimH', 
+            'dimRX', 'dimRY', 'dimRZ', 'dimRT', 'dimRBot', 'dimCH', 
+            'title', 'author', 'subtitle'
+        ];
 
         this.PRESETS_2D = {
             'ideation': { boxCount: 8, ratio: '2:3' },
@@ -169,7 +182,16 @@ class DraftGrid {
             scale2DVal: document.getElementById('scale-2d-val'),
             customSpacingInputs: document.getElementById('custom-spacing-inputs'),
             customSpacingVal: document.getElementById('custom-spacing-val'),
-            preserveCase: document.getElementById('preserve-case')
+            preserveCase: document.getElementById('preserve-case'),
+
+            // Template System
+            btnImportTemplate: document.getElementById('btn-import-template'),
+            templateFileInput: document.getElementById('template-file-input'),
+            btnExportTemplate: document.getElementById('btn-export-template'),
+            btnEditTemplateLeft: document.getElementById('btn-edit-template-left'),
+            btnEditTemplateRight: document.getElementById('btn-edit-template-right'),
+            leftLockOverlay: document.getElementById('left-lock-overlay'),
+            rightLockOverlay: document.getElementById('right-lock-overlay')
         };
         this.ctx = this.els.canvas.getContext('2d');
     }
@@ -254,6 +276,14 @@ class DraftGrid {
         safeBind(this.els.customSpacingVal, 'oninput', (e) => this.updateState({ customSpacing: parseFloat(e.target.value) || 0 }));
         safeBind(this.els.preserveCase, 'onchange', (e) => this.updateState({ preserveCase: e.target.checked }));
         safeBind(this.els.downloadBtn, 'onclick', () => this.handleDownload());
+
+        // Template System Bindings
+        safeBind(this.els.btnExportTemplate, 'onclick', () => this.handleExportTemplate());
+        safeBind(this.els.btnImportTemplate, 'onclick', () => this.els.templateFileInput.click());
+        safeBind(this.els.templateFileInput, 'onchange', (e) => this.handleImportTemplate(e));
+        [this.els.btnEditTemplateLeft, this.els.btnEditTemplateRight].forEach(btn => {
+            safeBind(btn, 'onclick', () => this.updateState({ isTemplateLocked: false }));
+        });
 
         window.onresize = () => this.render();
 
@@ -362,6 +392,51 @@ class DraftGrid {
         if (this.els.footerHeightDisplay) { this.els.footerHeightDisplay.textContent = `${this.state.footerHeight}mm`; }
         if (this.els.showWatermark) { this.els.showWatermark.checked = this.state.showWatermark; }
         if (this.els.includeQRCode) { this.els.includeQRCode.checked = this.state.includeQRCode; }
+
+        // Template Lock Overlays
+        const isLocked = this.state.isTemplateLocked;
+        this.els.leftLockOverlay.classList.toggle('visible', isLocked);
+        this.els.rightLockOverlay.classList.toggle('visible', isLocked);
+    }
+
+    handleExportTemplate() {
+        const templateData = {};
+        this.TEMPLATE_KEYS.forEach(key => {
+            if (this.state[key] !== undefined) {
+                templateData[key] = this.state[key];
+            }
+        });
+
+        const blob = new Blob([JSON.stringify(templateData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const timestamp = new Date().toISOString().slice(0, 10);
+        a.download = `DraftGrid-Template-${this.state.title || 'Untitled'}-${timestamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    handleImportTemplate(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                // Merge imported data into state and lock
+                this.updateState({ ...data, isTemplateLocked: true, activePreset: null });
+            } catch (err) {
+                console.error("Failed to parse template:", err);
+                alert("Invalid template file format.");
+            }
+        };
+        reader.readAsText(file);
+        // Reset input for same-file re-uploads
+        event.target.value = '';
     }
 
     applyPreset(id) {

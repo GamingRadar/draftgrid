@@ -88,6 +88,13 @@
     <div class="app-main">
         <!-- Left Sidebar: Construction Tools (Mode Specific) -->
         <aside class="sidebar left-sidebar" id="left-sidebar">
+            <div id="left-lock-overlay" class="lock-overlay">
+                <div class="lock-overlay-content">
+                    <i data-lucide="lock" style="width: 32px; height: 32px; color: var(--accent);"></i>
+                    <p>Template Locked</p>
+                    <button id="btn-edit-template-left" class="primary-button w-full">Edit Template</button>
+                </div>
+            </div>
             <div class="sidebar-scroll">
 
                 <!-- 2D SPECIFIC SIDEBAR -->
@@ -102,8 +109,9 @@
                                         data-lucide="grid-3x3"></i><span>Thumbnails</span></button>
                                 <button class="preset-card" data-preset="hero"><i
                                         data-lucide="image"></i><span>Hero</span></button>
-                                <button class="preset-card" data-preset="storyboard"><i
-                                        data-lucide="film"></i><span>Story</span></button>
+                                <button class="preset-card" id="btn-import-template"><i
+                                        data-lucide="upload-cloud"></i><span>Import</span></button>
+                                <input type="file" id="template-file-input" accept=".json" class="hidden">
                             </div>
                         </div>
                     </section>
@@ -291,7 +299,10 @@
                 </div>
             </div>
             <div class="sidebar-footer">
-                <button id="download-pdf" class="primary-button"><i data-lucide="download"></i> Download PDF</button>
+                <button id="download-pdf" class="primary-button"> <i data-lucide="download"></i> Download PDF</button>
+                <button id="btn-export-template" class="primary-icon-button w-full" style="justify-content: center; margin-top: 10px;">
+                    <i data-lucide="file-json"></i> Export Template
+                </button>
             </div>
         </aside>
 
@@ -311,68 +322,7 @@
         <!-- Right Drawer: Shared Global Settings -->
         <aside class="sidebar right-sidebar" id="right-sidebar">
             <div class="sidebar-scroll">
-                <details class="sidebar-section" open>
-                    <summary><i data-lucide="layout-template"></i> Layout & Grid</summary>
-                    <div class="section-content">
-                        <div class="control-group">
-                            <h4>Page Margins</h4>
-                            <select id="margin-preset" class="select-input">
-                                <option value="none">Min (2mm)</option>
-                                <option value="narrow">Narrow (5mm)</option>
-                                <option value="default" selected>Default (10mm)</option>
-                                <option value="wide">Wide (20mm)</option>
-                                <option value="custom">Custom</option>
-                            </select>
-                            <input type="number" id="margin-val" value="10" class="text-input mt-2 hidden">
-                        </div>
-                        <div class="control-group no-border">
-                            <h4>Gutter Spacing</h4>
-                            <div class="radio-group-grid" id="spacing-group">
-                                <label class="radio-item"><input type="radio" name="spacing"
-                                        value="small"><span>Small</span></label>
-                                <label class="radio-item"><input type="radio" name="spacing" value="medium"
-                                        checked><span>Med</span></label>
-                                <label class="radio-item"><input type="radio" name="spacing"
-                                        value="large"><span>Large</span></label>
-                                <label class="radio-item"><input type="radio" name="spacing"
-                                        value="custom"><span>Custom</span></label>
-                            </div>
-                            <div id="custom-spacing-inputs" class="hidden mt-2">
-                                <div class="input-row">
-                                    <input type="number" id="custom-spacing-val" value="5" min="0" step="0.1"
-                                        class="text-input mini" style="flex:1">
-                                    <span class="ml-2 font-tiny">mm</span>
-                                </div>
-                                <p class="helper-text mt-1">(Small: 2, Med: 5, Large: 10)</p>
-                            </div>
-                        </div>
-                    </div>
-                </details>
-
-                <details class="sidebar-section" open>
-                    <summary><i data-lucide="align-vertical-space-around"></i> Page Structure</summary>
-                    <div class="section-content">
-                        <div class="control-group">
-                            <label class="checkbox-item mb-2"><input type="checkbox" id="reserve-header"><span>Reserve
-                                    Header</span></label>
-                            <div class="input-row">
-                                <input type="range" id="header-height" min="10" max="50" value="15" style="flex:1">
-                                <span class="font-tiny" id="header-height-display"
-                                    style="width: 40px; text-align:right;">15mm</span>
-                            </div>
-                        </div>
-                        <div class="control-group no-border">
-                            <label class="checkbox-item mb-2"><input type="checkbox" id="reserve-footer"><span>Reserve
-                                    Footer</span></label>
-                            <div class="input-row">
-                                <input type="range" id="footer-height" min="10" max="50" value="15" style="flex:1">
-                                <span class="font-tiny" id="footer-height-display"
-                                    style="width: 40px; text-align:right;">15mm</span>
-                            </div>
-                        </div>
-                    </div>
-                </details>
-
+                <!-- Meta Sections (Always Unlocked) -->
                 <details class="sidebar-section" open>
                     <summary><i data-lucide="type"></i> Document Info</summary>
                     <div class="section-content">
@@ -415,35 +365,108 @@
                     </div>
                 </details>
 
-                <details class="sidebar-section">
-                    <summary><i data-lucide="share-2"></i> Credits & Sharing</summary>
-                    <div class="section-content">
-                        <label class="checkbox-item mb-2">
-                            <input type="checkbox" id="show-watermark" checked>
-                            <span>Include Watermark</span>
-                        </label>
-                        <label class="checkbox-item mb-2">
-                            <input type="checkbox" id="include-qr" checked>
-                            <span>Include QR Code</span>
-                        </label>
-                        <p class="helper-text">
-                            If DraftGrid helps your workflow, consider keeping credit or using #DraftGrid when sharing.
-                        </p>
-                    </div>
-                </details>
-
-                <details class="sidebar-section">
-                    <summary><i data-lucide="palette"></i> Stroke colour & opacity</summary>
-                    <div class="section-content">
-                        <div class="control-group no-border">
-                            <div class="input-row" style="display:flex; align-items:center; gap:10px">
-                                <input type="color" id="stroke-color" value="#1e293b" class="color-picker">
-                                <input type="range" id="stroke-opacity" min="0.1" max="1" step="0.1" value="1"
-                                    style="flex:1">
-                            </div>
+                <!-- Design Sections (Locked in Template Mode) -->
+                <div class="locked-parent">
+                    <div id="right-lock-overlay" class="lock-overlay">
+                        <div class="lock-overlay-content">
+                            <i data-lucide="lock" style="width: 24px; height: 24px; color: var(--accent);"></i>
+                            <p>Design Locked</p>
+                            <button id="btn-edit-template-right" class="primary-icon-button w-full" style="justify-content: center;">Edit Template</button>
                         </div>
                     </div>
-                </details>
+
+                    <details class="sidebar-section">
+                        <summary><i data-lucide="layout-template"></i> Layout & Grid</summary>
+                        <div class="section-content">
+                            <div class="control-group">
+                                <h4>Page Margins</h4>
+                                <select id="margin-preset" class="select-input">
+                                    <option value="none">Min (2mm)</option>
+                                    <option value="narrow">Narrow (5mm)</option>
+                                    <option value="default" selected>Default (10mm)</option>
+                                    <option value="wide">Wide (20mm)</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                                <input type="number" id="margin-val" value="10" class="text-input mt-2 hidden">
+                            </div>
+                            <div class="control-group no-border">
+                                <h4>Gutter Spacing</h4>
+                                <div class="radio-group-grid" id="spacing-group">
+                                    <label class="radio-item"><input type="radio" name="spacing"
+                                            value="small"><span>Small</span></label>
+                                    <label class="radio-item"><input type="radio" name="spacing" value="medium"
+                                            checked><span>Med</span></label>
+                                    <label class="radio-item"><input type="radio" name="spacing"
+                                            value="large"><span>Large</span></label>
+                                    <label class="radio-item"><input type="radio" name="spacing"
+                                            value="custom"><span>Custom</span></label>
+                                </div>
+                                <div id="custom-spacing-inputs" class="hidden mt-2">
+                                    <div class="input-row">
+                                        <input type="number" id="custom-spacing-val" value="5" min="0" step="0.1"
+                                            class="text-input mini" style="flex:1">
+                                        <span class="ml-2 font-tiny">mm</span>
+                                    </div>
+                                    <p class="helper-text mt-1">(Small: 2, Med: 5, Large: 10)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="sidebar-section">
+                        <summary><i data-lucide="align-vertical-space-around"></i> Page Structure</summary>
+                        <div class="section-content">
+                            <div class="control-group">
+                                <label class="checkbox-item mb-2"><input type="checkbox" id="reserve-header"><span>Reserve
+                                        Header</span></label>
+                                <div class="input-row">
+                                    <input type="range" id="header-height" min="10" max="50" value="15" style="flex:1">
+                                    <span class="font-tiny" id="header-height-display"
+                                        style="width: 40px; text-align:right;">15mm</span>
+                                </div>
+                            </div>
+                            <div class="control-group no-border">
+                                <label class="checkbox-item mb-2"><input type="checkbox" id="reserve-footer"><span>Reserve
+                                        Footer</span></label>
+                                <div class="input-row">
+                                    <input type="range" id="footer-height" min="10" max="50" value="15" style="flex:1">
+                                    <span class="font-tiny" id="footer-height-display"
+                                        style="width: 40px; text-align:right;">15mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="sidebar-section">
+                        <summary><i data-lucide="share-2"></i> Credits & Sharing</summary>
+                        <div class="section-content">
+                            <label class="checkbox-item mb-2">
+                                <input type="checkbox" id="show-watermark" checked>
+                                <span>Include Watermark</span>
+                            </label>
+                            <label class="checkbox-item mb-2">
+                                <input type="checkbox" id="include-qr" checked>
+                                <span>Include QR Code</span>
+                            </label>
+                            <p class="helper-text">
+                                If DraftGrid helps your workflow, consider keeping credit or using #DraftGrid when sharing.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details class="sidebar-section">
+                        <summary><i data-lucide="palette"></i> Stroke colour & opacity</summary>
+                        <div class="section-content">
+                            <div class="control-group no-border">
+                                <div class="input-row" style="display:flex; align-items:center; gap:10px">
+                                    <input type="color" id="stroke-color" value="#1e293b" class="color-picker">
+                                    <input type="range" id="stroke-opacity" min="0.1" max="1" step="0.1" value="1"
+                                        style="flex:1">
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
             </div>
             <div class="close-drawer-mobile">
                 <button id="close-right-sidebar" class="secondary-button">Done</button>
