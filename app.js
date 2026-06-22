@@ -151,7 +151,10 @@ class DraftGrid {
         const allDetails = document.querySelectorAll('details.sidebar-section');
         allDetails.forEach(details => {
             details.addEventListener('toggle', (e) => {
-                if (window.innerWidth < 900 && details.open) {
+                // If an input within any details is focused, do not auto-close others
+                const activeEl = document.activeElement;
+                const isInputFocused = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
+                if (window.innerWidth < 900 && details.open && !isInputFocused) {
                     allDetails.forEach(other => {
                         if (other !== details && other.open) {
                             other.open = false;
@@ -414,6 +417,12 @@ class DraftGrid {
         });
 
         window.onresize = () => {
+            const activeEl = document.activeElement;
+            const isInput = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
+            if (isInput) {
+                // Skip layout reordering and re-render to keep open panels while typing
+                return;
+            }
             this.handleMobileDOMReorder();
             this.render();
         };
@@ -471,14 +480,19 @@ class DraftGrid {
         this.els.ui2D.classList.toggle('hidden', is3D);
         this.els.ui3D.classList.toggle('hidden', !is3D);
 
+        // Mobile: Preserve currently open sections during typing
         if (window.innerWidth < 900) {
-            // Auto-open active configuration when mode changes on mobile
-            if (is3D) {
-                const engine = document.querySelector('#ui-3d-only details.sidebar-section');
-                if (engine) engine.open = true;
-            } else {
-                const config = document.querySelector('#ui-2d-only details.sidebar-section');
-                if (config) config.open = true;
+            // If a details element is currently focused (e.g., user is typing), keep its state.
+            const activeDetails = document.activeElement?.closest('details.sidebar-section');
+            if (!activeDetails) {
+                // Auto-open the main configuration section when no other section is active.
+                if (is3D) {
+                    const engine = document.querySelector('#ui-3d-only details.sidebar-section');
+                    if (engine) engine.open = true;
+                } else {
+                    const config = document.querySelector('#ui-2d-only details.sidebar-section');
+                    if (config) config.open = true;
+                }
             }
         }
 
