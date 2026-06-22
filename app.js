@@ -787,8 +787,11 @@ class DraftGrid {
         ctx.globalAlpha = this.state.strokeOpacity;
         ctx.lineWidth = 0.2;
 
+        let drawn = 0;
+        const maxShapes = this.state.boxCount;
         for (let r = 0; r < L.rows; r++) {
             for (let c = 0; c < L.cols; c++) {
+                if (drawn >= maxShapes) break;
                 const bx = L.startX + c * (L.boxW + L.spacingPx);
                 const by = L.startY + r * (L.boxH + L.spacingPx);
                 if (this.state.dimension === '3d') {
@@ -796,7 +799,9 @@ class DraftGrid {
                 } else {
                     this.draw2DPrimitive(ctx, bx, by, L.boxW, L.boxH);
                 }
+                drawn++;
             }
+            if (drawn >= maxShapes) break;
         }
     }
 
