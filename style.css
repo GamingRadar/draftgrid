@@ -668,76 +668,6 @@ body {
     display: none;
 }
 
-@media (max-width: 1024px) {
-    .left-sidebar {
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        transform: translateX(-100%);
-    }
-
-    .right-sidebar {
-        position: absolute;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        transform: translateX(100%);
-        width: 100%;
-        margin: 0;
-    }
-
-    .left-sidebar.open {
-        transform: translateX(0);
-        width: 85vw;
-    }
-
-    .right-sidebar.open {
-        transform: translateX(0);
-    }
-
-    .preview-area {
-        padding: 20px;
-    }
-
-    .mobile-nav {
-        display: flex;
-        position: fixed;
-        bottom: 30px;
-        left: 0;
-        right: 0;
-        justify-content: center;
-        gap: 20px;
-        z-index: 200;
-    }
-
-    .mobile-fab {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        border: none;
-        background: var(--bg-header);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        color: var(--text-main);
-        cursor: pointer;
-    }
-
-    .mobile-fab.accent {
-        background: var(--accent);
-        color: white;
-    }
-
-    .close-drawer-mobile {
-        display: block;
-        padding: 20px;
-        border-top: 1px solid var(--border-color);
-        background: var(--bg-sidebar);
-    }
-}
-
 .hidden {
     display: none !important;
 }
@@ -983,4 +913,335 @@ body {
 
 .w-full {
     width: 100% !important;
+}
+
+@media (max-width: 1028px) {
+
+    /* Main body and layout reset */
+    body {
+        overflow-y: auto !important;
+        height: auto !important;
+        min-height: 100vh !important;
+    }
+
+    .app-main {
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important;
+        overflow-y: visible !important;
+        padding-bottom: 120px !important;
+        /* Spacing so content isn't hidden by sticky bottom footer */
+    }
+
+    /* Visual Merging & Stacking of sidebars */
+    .left-sidebar,
+    .right-sidebar {
+        width: 100% !important;
+        height: auto !important;
+        position: static !important;
+        transform: none !important;
+        border: none !important;
+        background: transparent !important;
+        display: block !important;
+    }
+
+    .sidebar-scroll {
+        overflow-y: visible !important;
+        height: auto !important;
+    }
+
+    /* Page structure layout container (for right sidebar design sections) */
+    .locked-parent {
+        position: relative !important;
+        display: block !important;
+    }
+
+    /* Header CSS Grid Layout */
+    .app-header {
+        height: auto !important;
+        display: grid !important;
+        grid-template-areas:
+            "logo theme"
+            "toggles toggles" !important;
+        grid-template-columns: 1fr auto !important;
+        gap: 12px !important;
+        padding: 12px 16px !important;
+    }
+
+    .header-left {
+        grid-area: logo !important;
+        justify-content: flex-start !important;
+    }
+
+    .header-center {
+        grid-area: toggles !important;
+        display: flex !important;
+        width: 100% !important;
+        gap: 10px !important;
+    }
+
+    .header-right {
+        grid-area: theme !important;
+        justify-content: flex-end !important;
+    }
+
+    #toggle-right-sidebar {
+        display: none !important;
+    }
+
+    .dimension-toggle,
+    .orientation-toggle {
+        flex: 1 !important;
+    }
+
+    .mode-btn,
+    .orient-btn {
+        flex: 1 !important;
+    }
+
+    .mode-btn span,
+    .orient-btn span {
+        padding: 8px 0 !important;
+        font-size: 0.75rem !important;
+        width: 100% !important;
+    }
+
+    /* Hide Mobile Drawer Navigation Toggles */
+    .mobile-nav-toggle {
+        display: none !important;
+    }
+
+    .close-drawer-mobile {
+        display: none !important;
+    }
+
+    /* Page Preview layout constraints */
+    .kla-logo {
+        max-width: 260px !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    /* Responsive logo sizing for small devices */
+    @media (max-width: 599px) {
+        .kla-logo {
+            max-width: 200px !important;
+        }
+    }
+
+    .preview-area {
+        order: 1 !important;
+        width: 100% !important;
+        flex: none !important;
+        padding: 20px 16px !important;
+    }
+
+    .preview-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+
+    .preview-paper {
+        width: clamp(85vw, 90vw, 100%);
+        max-height: 72vh;
+        aspect-ratio: 210/297;
+    }
+
+    .preview-paper.landscape {
+        aspect-ratio: 297 / 210 !important;
+        /* A4 Landscape ratio */
+    }
+
+    #grid-canvas {
+        width: 100% !important;
+        height: 100% !important;
+        display: block !important;
+    }
+
+    /* Left and Right Sidebar visual stack orders */
+    .left-sidebar {
+        order: 2 !important;
+    }
+
+    .right-sidebar {
+        order: 3 !important;
+    }
+
+    .sidebar-footer {
+        order: 4 !important;
+        position: sticky !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        background: var(--bg-sidebar) !important;
+        border-top: 1px solid var(--border-color) !important;
+        padding: 12px 16px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 12px !important;
+        z-index: 1500 !important;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .sidebar-footer button {
+        flex: 1 !important;
+        margin: 0 !important;
+        height: 46px !important;
+        padding: 0 12px !important;
+    }
+
+    #download-pdf {
+        max-width: 240px;
+        width: 100%;
+    }
+
+    .sidebar-branding {
+        order: 5 !important;
+        padding-bottom: 80px !important;
+        margin-top: 20px !important;
+    }
+
+    /* Accordion Premium Styling on Mobile */
+    .sidebar-section {
+        border: 1px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        margin: 8px 16px !important;
+        overflow: hidden !important;
+        background: var(--bg-sidebar) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+        transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
+    }
+
+    .sidebar-section[open] {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+        border-color: var(--accent) !important;
+    }
+
+    .sidebar-section summary {
+        padding: 14px 18px !important;
+        background: var(--bg-app) !important;
+        font-weight: 700 !important;
+        color: var(--text-main) !important;
+        transition: background 0.2s ease !important;
+    }
+
+    .sidebar-section[open] summary {
+        background: var(--bg-sidebar) !important;
+        border-bottom: 1px solid var(--border-color) !important;
+    }
+
+    .section-content {
+        padding: 16px 18px !important;
+    }
+
+    /* Style non-details preset section like card */
+    .sidebar-scroll>section.sidebar-section {
+        border: 1px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        margin: 8px 16px !important;
+        overflow: hidden !important;
+        background: var(--bg-sidebar) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+    }
+
+    .sidebar-scroll>section.sidebar-section .section-title {
+        padding: 14px 18px !important;
+        background: var(--bg-app) !important;
+        font-weight: 700 !important;
+        color: var(--text-main) !important;
+        border-bottom: 1px solid var(--border-color) !important;
+    }
+
+    /* Horizontal presets scrolling and icon-only */
+    .preset-grid {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        gap: 12px !important;
+        padding: 4px 0 !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .preset-grid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .preset-card {
+        flex: 0 0 auto !important;
+        width: 56px !important;
+        height: 56px !important;
+        padding: 0 !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+
+    .preset-card span {
+        display: none !important;
+    }
+
+    /* Sticky Action Bar styling moved to order section above */
+
+    /* Mobile Short Action Button Text via CSS */
+    #download-pdf .btn-text {
+        font-size: 0px !important;
+    }
+
+    #download-pdf .btn-text::before {
+        content: "↓ PDF" !important;
+        font-size: 0.85rem !important;
+    }
+
+    #btn-export-template .btn-text {
+        font-size: 0px !important;
+    }
+
+    #btn-export-template .btn-text::before {
+        content: "⇅ Template" !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* Responsive margins/padding adjustment for inner elements */
+    input[type="range"] {
+        height: 8px !important;
+    }
+
+    .radio-item span,
+    .radio-item-mini span {
+        padding: 12px 6px !important;
+    }
+
+    .text-input,
+    .select-input {
+        padding: 12px !important;
+    }
+
+    .modal-card {
+        padding: 20px !important;
+        gap: 16px !important;
+    }
+
+    .export-option-btn {
+        padding: 12px !important;
+        gap: 12px !important;
+    }
+}
+
+
+/* End of @media (max-width: 899px) */
+
+@media (max-width: 899px) and (orientation: landscape) {
+    .preview-paper {
+        height: 60vh !important;
+        width: auto !important;
+    }
+}
+
+.theme-light .kla-logo {
+    filter: invert(1);
 }

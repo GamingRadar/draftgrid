@@ -124,8 +124,72 @@ class DraftGrid {
         this.cacheElements();
         this.bindEvents();
         this.detectTheme();
+        this.initMobileResponsive();
         this.updateUIValues();
         this.render();
+    }
+
+    initMobileResponsive() {
+        if (window.innerWidth < 900) {
+            // Collapse all sections by default on mobile, except main config layout
+            document.querySelectorAll('details.sidebar-section').forEach(details => {
+                const summary = details.querySelector('summary');
+                if (summary) {
+                    const summaryText = summary.textContent.toLowerCase();
+                    if (summaryText.includes('grid config') || summaryText.includes('geometry engine')) {
+                        details.open = true;
+                    } else {
+                        details.removeAttribute('open');
+                    }
+                }
+            });
+        }
+
+        this.handleMobileDOMReorder();
+
+        // Accordion behavior: close other details globally in both sidebars when one is opened
+        const allDetails = document.querySelectorAll('details.sidebar-section');
+        allDetails.forEach(details => {
+            details.addEventListener('toggle', (e) => {
+                if (window.innerWidth < 900 && details.open) {
+                    allDetails.forEach(other => {
+                        if (other !== details && other.open) {
+                            other.open = false;
+                        }
+                    });
+                    // Smooth scroll the opened section into view after layout updates
+                    setTimeout(() => {
+                        details.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }, 100);
+                }
+            });
+        });
+    }
+
+    handleMobileDOMReorder() {
+        const width = window.innerWidth;
+        const appContainer = document.querySelector('.app-main');
+        const footer = document.querySelector('.sidebar-footer');
+        const branding = document.querySelector('.sidebar-branding');
+        const leftSidebar = document.querySelector('.left-sidebar');
+        const rightSidebar = document.querySelector('.right-sidebar');
+
+        // Apply reposition for mobile and tablet (<=1028px)
+        if (width <= 1028) {
+            if (footer && footer.parentElement === leftSidebar) {
+                appContainer.appendChild(footer);
+            }
+            if (branding && branding.parentElement === rightSidebar) {
+                appContainer.appendChild(branding);
+            }
+        } else {
+            if (footer && footer.parentElement === appContainer) {
+                leftSidebar.appendChild(footer);
+            }
+            if (branding && branding.parentElement === appContainer) {
+                rightSidebar.appendChild(branding);
+            }
+        }
     }
 
     cacheElements() {
@@ -349,16 +413,20 @@ class DraftGrid {
             };
         });
 
-        window.onresize = () => this.render();
+        window.onresize = () => {
+            this.handleMobileDOMReorder();
+            this.render();
+        };
 
         // Setup Wheel Zoom
         const previewContainer = this.els.paperPreview?.parentElement;
         if (previewContainer) {
             previewContainer.addEventListener('wheel', (e) => {
+                if (window.innerWidth <= 1028) return; // Disable zoom on mobile and tablet
                 if (e.ctrlKey || e.metaKey || true) { // Allow zooming anywhere on paper container
                     e.preventDefault();
                     const delta = e.deltaY > 0 ? -0.05 : 0.05;
-                    this.state.zoomLevel = Math.max(0.1, Math.min(3.0, this.state.zoomLevel + delta));
+                    this.state.zoomLevel = Math.max(0.4, Math.min(3.0, this.state.zoomLevel + delta));
                     this.els.paperPreview.style.width = (this.els.canvas.width * this.state.zoomLevel) + 'px';
                     this.els.paperPreview.style.height = (this.els.canvas.height * this.state.zoomLevel) + 'px';
                 }
@@ -402,6 +470,17 @@ class DraftGrid {
         const is3D = this.state.dimension === '3d';
         this.els.ui2D.classList.toggle('hidden', is3D);
         this.els.ui3D.classList.toggle('hidden', !is3D);
+
+        if (window.innerWidth < 900) {
+            // Auto-open active configuration when mode changes on mobile
+            if (is3D) {
+                const engine = document.querySelector('#ui-3d-only details.sidebar-section');
+                if (engine) engine.open = true;
+            } else {
+                const config = document.querySelector('#ui-2d-only details.sidebar-section');
+                if (config) config.open = true;
+            }
+        }
 
         // Sync inputs
         if (is3D) {
@@ -667,8 +746,17 @@ class DraftGrid {
         const mmToPx = 3.7795275591;
         this.els.canvas.width = layout.canvasW * mmToPx;
         this.els.canvas.height = layout.canvasH * mmToPx;
-        this.els.paperPreview.style.width = (this.els.canvas.width * this.state.zoomLevel) + 'px';
-        this.els.paperPreview.style.height = (this.els.canvas.height * this.state.zoomLevel) + 'px';
+        if (window.innerWidth <= 899) {
+            // Phone/compact: preview fills container width, maintain A4 aspect ratio
+            this.state.zoomLevel = 1;
+            this.els.paperPreview.style.width = '100%';
+            // Compute height to preserve A4 ratio (canvas height / canvas width)
+            const aspect = layout.canvasH / layout.canvasW;
+            this.els.paperPreview.style.height = (aspect * 100) + '%';
+        } else {
+            this.els.paperPreview.style.width = (this.els.canvas.width * this.state.zoomLevel) + 'px';
+            this.els.paperPreview.style.height = (this.els.canvas.height * this.state.zoomLevel) + 'px';
+        }
 
         const ctx = this.ctx;
         ctx.clearRect(0, 0, this.els.canvas.width, this.els.canvas.height);
