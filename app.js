@@ -257,6 +257,7 @@ class DraftGrid {
             showLabels: document.getElementById('show-labels'),
             showMetaBorder: document.getElementById('show-meta-border'),
             showDate: document.getElementById('show-date'),
+            howToBtn: document.getElementById('how-to-btn'),
             dateModeInputs: document.getElementsByName('date-mode'),
             customDateVal: document.getElementById('custom-date-val'),
             dateDetails: document.getElementById('date-details'),
@@ -308,6 +309,9 @@ class DraftGrid {
 
         safeBind(this.els.themeToggle, 'onclick', () => this.toggleTheme());
         safeBind(this.els.toggleRightBtn, 'onclick', () => this.toggleSidebar('right'));
+        safeBind(this.els.howToBtn, 'onclick', () => {
+            window.open('https://youtu.be/H97ifv3DBQQ', '_blank');
+        });
         safeBind(this.els.closeRightBtn, 'onclick', () => this.toggleSidebar('right', false));
         safeBind(this.els.mobileToggleLeft, 'onclick', () => this.toggleSidebar('left'));
         safeBind(this.els.mobileToggleRight, 'onclick', () => this.toggleSidebar('right'));
